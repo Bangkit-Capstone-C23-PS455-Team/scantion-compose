@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Scantion</string>
+    <string name="walkthroughTitle1">Ambil dan Unggah Gambar</string>
+    <string name="walkthroughTitle2">Deteksi Kanker Kulit Akurat</string>
+    <string name="walkthroughTitle3">Penilaian Risiko</string>
+    <string name="walkthroughText1">Ambil atau pilih gambar lesi kulit, lalu unggah untuk dianalisis.</string>
+    <string name="walkthroughText2">Algoritma canggih mendeteksi lesi kanker kulit untuk deteksi dini.</string>
+    <string name="walkthroughText3">Dapatkan penilaian risiko dan akses sumber daya edukasi untuk pencegahan.</string>
+    <string name="title_activity_home">HomeActivity</string>
+    <string name="menu_home">home</string>
+    <string name="login_text">Masuk</string>
+    <string name="register_text">Daftar</string>
 </resources>
