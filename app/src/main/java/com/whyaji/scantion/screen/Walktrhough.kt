@@ -37,6 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.whyaji.scantion.viewmodel.WalktrhoughViewModel
 import com.google.accompanist.pager.*
+import com.whyaji.scantion.navigation.AuthScreen
 import com.whyaji.scantion.navigation.Graph
 import com.whyaji.scantion.util.WalkthroughItems
 import kotlinx.coroutines.launch
@@ -45,7 +46,7 @@ import kotlinx.coroutines.launch
 @ExperimentalPagerApi
 @Composable
 fun Walktrhough(
-    navController: NavHostController, walktrhoughViewModel: WalktrhoughViewModel = hiltViewModel()
+    navController: NavHostController
 ) {
     val items = WalkthroughItems.getData()
     val scope = rememberCoroutineScope()
@@ -65,7 +66,7 @@ fun Walktrhough(
                 .fillMaxHeight(0.9f)
                 .fillMaxWidth()
         ) { page ->
-            WalkthroughItem(items = items[page], page, navController, walktrhoughViewModel)
+            WalkthroughItem(items = items[page], page, navController)
         }
 
         BottomSection(size = items.size, index = pageState.currentPage, onNextClick = {
@@ -186,8 +187,7 @@ fun Indicator(isSelected: Boolean) {
 fun WalkthroughItem(
     items: WalkthroughItems,
     page: Int,
-    navController: NavHostController,
-    walktrhoughViewModel: WalktrhoughViewModel,
+    navController: NavHostController
 ) {
     Column(
         modifier = Modifier
@@ -209,9 +209,7 @@ fun WalkthroughItem(
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.medium,
                     onClick = {
-                        walktrhoughViewModel.saveOnBoardingState(completed = true)
-                        navController.popBackStack()
-                        navController.navigate(Graph.HOME)
+                        navController.navigate(AuthScreen.Login.route)
                     }
                 ) {
                     Text(
@@ -226,7 +224,9 @@ fun WalkthroughItem(
                 Button(
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.medium,
-                    onClick = {},
+                    onClick = {
+                        navController.navigate(AuthScreen.Register.route)
+                    },
                     colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.background),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
                 ) {

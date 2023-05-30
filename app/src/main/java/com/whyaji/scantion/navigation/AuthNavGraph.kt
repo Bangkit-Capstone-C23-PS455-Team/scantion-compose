@@ -6,6 +6,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.google.accompanist.pager.ExperimentalPagerApi
+import com.whyaji.scantion.screen.Login
+import com.whyaji.scantion.screen.Register
 import com.whyaji.scantion.screen.Walktrhough
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalPagerApi::class)
@@ -19,9 +21,17 @@ fun NavGraphBuilder.authNavGraph(
         composable(route = AuthScreen.Walkthrough.route) {
             Walktrhough(navController = navController)
         }
+        composable(route = AuthScreen.Login.route) {
+            Login(navController = navController)
+        }
+        composable(route = AuthScreen.Register.route) {
+            Register(navController = navController)
+        }
     }
 }
 
 sealed class AuthScreen(val route: String) {
     object Walkthrough : AuthScreen(route = "walkthrough_screen")
+    object Login: AuthScreen(route = "login_screen")
+    object Register: AuthScreen(route = "register_screen")
 }
