@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.whyaji.scantion.navigation.AuthScreen
 import com.whyaji.scantion.ui.component.AuthSpacer
+import com.whyaji.scantion.ui.component.TextButton
 
 @Composable
 fun Register(
@@ -133,20 +134,15 @@ private fun ContentSection(navController: NavHostController) {
             label = { Text("Confirm Password") }
         )
         AuthSpacer()
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.medium,
+        TextButton(
+            enabled = nameText.isNotEmpty() && emailText.isNotEmpty() && passwordText.isNotEmpty() && confirmPasswordText.isNotEmpty(),
             onClick = {
                 navController.navigate(AuthScreen.Login.route){
                     popUpTo(AuthScreen.Walkthrough.route)
                 }
-            }
-        ) {
-            Text(
-                text = stringResource(id = R.string.register_text),
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(5.dp)
-            )
-        }
+            },
+            text =  stringResource(id = R.string.register_text),
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }

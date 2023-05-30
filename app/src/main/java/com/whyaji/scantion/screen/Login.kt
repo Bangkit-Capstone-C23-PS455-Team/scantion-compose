@@ -37,15 +37,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.whyaji.scantion.navigation.AuthScreen
 import com.whyaji.scantion.ui.component.AuthSpacer
+import com.whyaji.scantion.ui.component.TextButton
 
 @Composable
 fun Login(
     navController: NavHostController,
     walktrhoughViewModel: WalktrhoughViewModel = hiltViewModel()
-){
-    Column (modifier = Modifier
-        .fillMaxSize()
-        .padding(horizontal = 25.dp)){
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 25.dp)
+    ) {
         TopSection(navController = navController)
         ContentSection(navController = navController, walktrhoughViewModel)
         BottomSection(navController = navController)
@@ -65,13 +68,13 @@ private fun BottomSection(navController: NavHostController) {
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .clickable {
-                navController.navigate(AuthScreen.Register.route)
-        })
+                    navController.navigate(AuthScreen.Register.route)
+                })
     }
 }
 
 @Composable
-private fun TopSection(navController: NavHostController){
+private fun TopSection(navController: NavHostController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -92,12 +95,17 @@ private fun TopSection(navController: NavHostController){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ContentSection(navController: NavHostController, walktrhoughViewModel: WalktrhoughViewModel) {
+private fun ContentSection(
+    navController: NavHostController,
+    walktrhoughViewModel: WalktrhoughViewModel
+) {
     var emailText by rememberSaveable { mutableStateOf("") }
     var passwordText by rememberSaveable { mutableStateOf("") }
-    Column(modifier = Modifier
-        .fillMaxHeight(0.9f)
-        .fillMaxWidth()) {
+    Column(
+        modifier = Modifier
+            .fillMaxHeight(0.9f)
+            .fillMaxWidth()
+    ) {
         Text(
             text = "Selamat Datang Kembali",
             style = MaterialTheme.typography.displaySmall,
@@ -119,21 +127,16 @@ private fun ContentSection(navController: NavHostController, walktrhoughViewMode
             label = { Text("Password") }
         )
         AuthSpacer()
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.medium,
+        TextButton(
+            enabled = emailText.isNotEmpty() && passwordText.isNotEmpty(),
             onClick = {
                 walktrhoughViewModel.saveOnBoardingState(completed = true)
                 navController.navigate(Graph.HOME) {
-                    popUpTo(Graph.AUTHENTICATION) {inclusive = true}
+                    popUpTo(Graph.AUTHENTICATION) { inclusive = true }
                 }
-            }
-        ) {
-            Text(
-                text = stringResource(id = R.string.login_text),
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(5.dp)
-            )
-        }
+            },
+            text = stringResource(id = R.string.login_text),
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }

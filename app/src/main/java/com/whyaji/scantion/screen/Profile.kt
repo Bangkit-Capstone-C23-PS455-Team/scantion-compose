@@ -18,14 +18,14 @@ import com.whyaji.scantion.navigation.Graph
 import com.whyaji.scantion.viewmodel.WalktrhoughViewModel
 
 @Composable
-fun Home(navController: NavHostController, walktrhoughViewModel: WalktrhoughViewModel = hiltViewModel()) {
+fun Profile(navController: NavHostController, walktrhoughViewModel: WalktrhoughViewModel = hiltViewModel()) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column(modifier = Modifier.padding(horizontal = 25.dp)) {
             Text(
-                text = "HOME",
+                text = "Profile",
                 style = MaterialTheme.typography.headlineLarge
             )
             Button(

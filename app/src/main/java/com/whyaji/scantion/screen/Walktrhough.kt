@@ -33,12 +33,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.whyaji.scantion.viewmodel.WalktrhoughViewModel
 import com.google.accompanist.pager.*
 import com.whyaji.scantion.navigation.AuthScreen
-import com.whyaji.scantion.navigation.Graph
+import com.whyaji.scantion.ui.component.TextButton
 import com.whyaji.scantion.util.WalkthroughItems
 import kotlinx.coroutines.launch
 
@@ -185,9 +183,7 @@ fun Indicator(isSelected: Boolean) {
 
 @Composable
 fun WalkthroughItem(
-    items: WalkthroughItems,
-    page: Int,
-    navController: NavHostController
+    items: WalkthroughItems, page: Int, navController: NavHostController
 ) {
     Column(
         modifier = Modifier
@@ -205,38 +201,22 @@ fun WalkthroughItem(
             Column(
                 modifier = Modifier.height(150.dp), verticalArrangement = Arrangement.Center
             ) {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
+                TextButton(
                     onClick = {
                         navController.navigate(AuthScreen.Login.route)
-                    }
-                ) {
-                    Text(
-                        text = stringResource(id = items.textFirst),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(5.dp)
-                    )
-                }
+                    },
+                    text = stringResource(id = items.textFirst),
+                    modifier = Modifier.fillMaxWidth()
+                )
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Button(
+                TextButton(
+                    onClick = { navController.navigate(AuthScreen.Register.route) },
+                    text = stringResource(id = items.textSecond),
                     modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    onClick = {
-                        navController.navigate(AuthScreen.Register.route)
-                    },
-                    colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.background),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                ) {
-                    Text(
-                        text = stringResource(id = items.textSecond),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(5.dp),
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                }
+                    outlineButton = true
+                )
             }
         } else {
             Column(
