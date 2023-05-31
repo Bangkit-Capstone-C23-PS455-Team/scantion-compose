@@ -80,7 +80,7 @@ fun Walktrhough(
 }
 
 @Composable
-fun TopSection(visible: Boolean, onSkipClick: () -> Unit = {}) {
+private fun TopSection(visible: Boolean, onSkipClick: () -> Unit = {}) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -101,7 +101,7 @@ fun TopSection(visible: Boolean, onSkipClick: () -> Unit = {}) {
 }
 
 @Composable
-fun BottomSection(
+private fun BottomSection(
     size: Int, index: Int, onNextClick: () -> Unit = {}, onPrevClick: () -> Unit = {}
 ) {
     Box(
@@ -162,7 +162,7 @@ fun BottomSection(
 }
 
 @Composable
-fun Indicator(isSelected: Boolean) {
+private fun Indicator(isSelected: Boolean) {
     val width = animateDpAsState(
         targetValue = if (isSelected) 25.dp else 10.dp,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
@@ -182,7 +182,7 @@ fun Indicator(isSelected: Boolean) {
 }
 
 @Composable
-fun WalkthroughItem(
+private fun WalkthroughItem(
     items: WalkthroughItems, page: Int, navController: NavHostController
 ) {
     Column(

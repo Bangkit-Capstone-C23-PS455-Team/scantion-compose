@@ -22,7 +22,7 @@ fun NavGraphBuilder.homeNavGraph(
             Profile(navController)
         }
         composable(route = HomeScreen.Examination.route) {
-            Examination()
+            Examination(navController)
         }
     }
 }
