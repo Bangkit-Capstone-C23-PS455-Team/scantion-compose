@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace 'com.whyaji.scantion'
+    namespace 'com.bangkit.scantion'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.whyaji.scantion"
+        applicationId "com.bangkit.scantion"
         minSdk 29
         targetSdk 33
         versionCode 1
