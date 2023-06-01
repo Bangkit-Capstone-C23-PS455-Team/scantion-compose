@@ -1,9 +1,6 @@
 package com.whyaji.scantion.screen
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -18,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -27,16 +23,17 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,6 +42,12 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import com.whyaji.scantion.ui.component.AuthSpacer
+import com.whyaji.scantion.ui.component.TextFieldQuestion
 
 
 class ExaminationItems (
@@ -56,18 +59,17 @@ class ExaminationItems (
         fun getData(): List<ExaminationItems> {
             return listOf(
                 ExaminationItems(
-                    "photo",
-                    "Tambahkan foto kulit anda yang ingin diperiksa. \n" +
-                            "Pastikan gambar masalah kulit anda terlihat dan berada di tengah.",
+                    "Foto",
+                    "Tambahkan foto kulit anda yang ingin diperiksa.",
                     Icons.Outlined.Add
                 ),
                 ExaminationItems(
-                    "question",
+                    "Pertanyaan",
                     "Jawablah beberapa pertanyaan berikut.",
                     Icons.Outlined.Info
                 ),
                 ExaminationItems(
-                    "result",
+                    "Hasil",
                     "Ini lah hasil dari pemeriksaan masalah kulit anda.",
                     Icons.Outlined.Check
                 )
@@ -83,6 +85,10 @@ fun Examination(navController: NavHostController) {
     val scope = rememberCoroutineScope()
     val pageState = rememberPagerState()
 
+    var bodyPart by rememberSaveable { mutableStateOf("") }
+    var howLong by rememberSaveable { mutableStateOf("") }
+    var symptom by rememberSaveable { mutableStateOf("") }
+
     Column(modifier = Modifier.fillMaxSize()) {
         TopSection(items = items, index = pageState.currentPage, navController)
 
@@ -93,7 +99,16 @@ fun Examination(navController: NavHostController) {
                 .fillMaxHeight(0.9f)
                 .fillMaxWidth()
         ) { page ->
-            ExaminationItem(items = items[page], page, navController)
+            ExaminationItem(
+                page,
+                navController,
+                bodyPart,
+                howLong,
+                symptom,
+                onBodyPartChange = { bodyPart = it },
+                onSymptomChange = { symptom = it } ,
+                onHowLongChange = { howLong = it }
+            )
         }
 
 
@@ -110,21 +125,77 @@ fun Examination(navController: NavHostController) {
 }
 
 @Composable
-private fun ExaminationItem(items: ExaminationItems, page: Int, navController: NavHostController) {
+private fun ExaminationItem(
+    page: Int,
+    navController: NavHostController,
+    bodyPart: String,
+    symptom: String,
+    howLong: String,
+    onBodyPartChange: (String) -> Unit,
+    onSymptomChange: (String) -> Unit,
+    onHowLongChange: (String) -> Unit
+) {
+    when (page) {
+        0 -> {
+
+        }
+        1 -> {
+            QuestionPage(
+                bodyPart,
+                howLong,
+                symptom,
+                onBodyPartChange,
+                onSymptomChange,
+                onHowLongChange
+            )
+        }
+        2 -> {
+
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun QuestionPage(
+    bodyPart: String,
+    symptom: String,
+    howLong: String,
+    onBodyPartChange: (String) -> Unit,
+    onSymptomChange: (String) -> Unit,
+    onHowLongChange: (String) -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp),
+            .padding(top = 20.dp, start = 16.dp, end = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        Text(text = items.hint,
-        modifier = Modifier.padding(top = 100.dp))
+        TextFieldQuestion(
+            text = "Bagian kulit mana yang diperiksa?",
+            placeholder = "Bagian Kulit (misal: Tangan)",
+            value = bodyPart,
+            onChangeValue = onBodyPartChange
+        )
+        TextFieldQuestion(
+            text = "Sudah berapa lama masalah kulit ini muncul?",
+            placeholder = "Berapa lama (misal: 1 tahun 2 bulan)",
+            value = symptom,
+            onChangeValue = onSymptomChange
+        )
+        TextFieldQuestion(
+            text = "Apa saja gejala kulit yang anda alami?",
+            placeholder = "Gejala (misal: gatal, panas, kering)",
+            value = howLong,
+            onChangeValue = onHowLongChange
+        )
     }
 }
 
 @Composable
 private fun TopSection(items: List<ExaminationItems>, index: Int, navController: NavHostController) {
     val size = items.size
-    Column() {
+    Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -152,12 +223,15 @@ private fun TopSection(items: List<ExaminationItems>, index: Int, navController:
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(color = MaterialTheme.colorScheme.surfaceVariant),
-            )
+            Column {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(2.dp)
+                        .background(color = MaterialTheme.colorScheme.surfaceVariant),
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+            }
             // Indicators
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -168,22 +242,51 @@ private fun TopSection(items: List<ExaminationItems>, index: Int, navController:
                 }
             }
         }
+        Spacer(modifier = Modifier.height(20.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+                .background(color = MaterialTheme.colorScheme.surfaceVariant),
+            contentAlignment = Alignment.CenterStart,
+        ) {
+            Text(
+                text = items[index].hint,
+                modifier = Modifier.padding(horizontal = 16.dp),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
     }
 }
 
 @Composable
 private fun Indicator(isSelected: Boolean, items: ExaminationItems) {
-    Box(
-        modifier = Modifier
-            .clip(CircleShape)
-            .size(60.dp)
-            .background(
-                color = if (isSelected) MaterialTheme.colorScheme.primary else Color(0XFFF8E2E7)
-            ),
-        contentAlignment = Alignment.Center
+    val colorPrimary = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+    val colorSurfaceVariant = if (!isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+    Column(
+        modifier = Modifier.height(80.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Icon(
-            imageVector = items.icon, contentDescription = "icon indicator"
+        Box(
+            modifier = Modifier
+                .clip(CircleShape)
+                .size(60.dp)
+                .background(
+                    color = colorPrimary
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = items.icon,
+                contentDescription = "icon indicator",
+                tint = colorSurfaceVariant
+            )
+        }
+        Text(
+            text = items.pageName,
+            style = MaterialTheme.typography.bodyMedium,
+            color = colorPrimary,
         )
     }
 }
