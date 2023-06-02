@@ -18,5 +18,4 @@ object MainModule {
     fun provideDataStoreRepository(
         @ApplicationContext context: Context
     ) = DataStoreRepository(context = context)
-
 }

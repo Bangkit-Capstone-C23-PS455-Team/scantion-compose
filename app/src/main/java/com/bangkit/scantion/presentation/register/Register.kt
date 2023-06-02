@@ -30,9 +30,14 @@ import androidx.navigation.NavHostController
 import com.bangkit.scantion.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.bangkit.scantion.data.remote.network.ApiConfig
+import com.bangkit.scantion.model.User
 import com.bangkit.scantion.navigation.AuthScreen
 import com.bangkit.scantion.ui.component.AuthSpacer
 import com.bangkit.scantion.ui.component.ScantionButton
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @Composable
 fun Register(
@@ -59,8 +64,8 @@ fun BottomSection(navController: NavHostController) {
             color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.clickable {
-                    navController.navigate(AuthScreen.Login.route)
-                })
+                navController.navigate(AuthScreen.Login.route)
+            })
     }
 }
 
@@ -89,6 +94,7 @@ fun ContentSection(navController: NavHostController) {
     var emailText by rememberSaveable { mutableStateOf("") }
     var passwordText by rememberSaveable { mutableStateOf("") }
     var confirmPasswordText by rememberSaveable { mutableStateOf("") }
+
 
     Column(
         modifier = Modifier
@@ -124,14 +130,27 @@ fun ContentSection(navController: NavHostController) {
             label = { Text("Confirm Password") })
         AuthSpacer()
         ScantionButton(
-            enabled = nameText.isNotEmpty() && emailText.isNotEmpty() && passwordText.isNotEmpty() && confirmPasswordText.isNotEmpty(),
+            enabled = nameText.isNotEmpty() && emailText.isNotEmpty() && passwordText.isNotEmpty() && confirmPasswordText.isNotEmpty() && passwordText == confirmPasswordText,
             onClick = {
-                navController.navigate(AuthScreen.Login.route) {
-                    popUpTo(AuthScreen.Walkthrough.route)
-                }
+                postData(navController, User(nameText, emailText, passwordText, 0, "sadf", "asfd"))
             },
             text = stringResource(id = R.string.register_text),
             modifier = Modifier.fillMaxWidth(),
         )
     }
+}
+
+private fun postData(navController: NavHostController, user: User) {
+    val call: Call<User?>? = ApiConfig.getApiService().register(user)
+
+    call!!.enqueue(object : Callback<User?> {
+        override fun onResponse(call: Call<User?>, response: Response<User?>) {
+            navController.navigate(AuthScreen.Login.route) {
+                popUpTo(AuthScreen.Walkthrough.route)
+            }
+        }
+
+        override fun onFailure(call: Call<User?>, t: Throwable) {
+        }
+    })
 }
