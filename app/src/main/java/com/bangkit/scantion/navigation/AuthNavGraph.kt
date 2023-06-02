@@ -8,7 +8,7 @@ import androidx.navigation.compose.navigation
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.bangkit.scantion.presentation.login.Login
 import com.bangkit.scantion.presentation.register.Register
-import com.bangkit.scantion.presentation.walkthrough.Walktrhough
+import com.bangkit.scantion.presentation.walkthrough.Walkthrough
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalPagerApi::class)
 fun NavGraphBuilder.authNavGraph(
@@ -19,7 +19,7 @@ fun NavGraphBuilder.authNavGraph(
         startDestination = AuthScreen.Walkthrough.route
     ) {
         composable(route = AuthScreen.Walkthrough.route) {
-            Walktrhough(navController = navController)
+            Walkthrough(navController = navController)
         }
         composable(route = AuthScreen.Login.route) {
             Login(navController = navController)
