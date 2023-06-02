@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
 @ExperimentalAnimationApi
 @ExperimentalPagerApi
 @Composable
-fun Walktrhough(
+fun Walkthrough(
     navController: NavHostController
 ) {
     val items = WalkthroughItems.getData()
