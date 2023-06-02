@@ -11,7 +11,7 @@ class WalkthroughItems (
         fun getData(): List<WalkthroughItems> {
             return listOf(
                 WalkthroughItems(
-                    R.drawable.img,
+                    R.drawable.img_walkthrough_1,
                     R.string.walkthroughTitle1,
                     R.string.walkthroughText1
                 ),
