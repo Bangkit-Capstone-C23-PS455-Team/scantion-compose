@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.google.accompanist.pager.*
 import com.bangkit.scantion.navigation.AuthScreen
-import com.bangkit.scantion.ui.component.TextButton
+import com.bangkit.scantion.ui.component.ScantionButton
 import com.bangkit.scantion.util.WalkthroughItems
 import kotlinx.coroutines.launch
 
@@ -198,7 +198,7 @@ fun WalkthroughItem(
             Column(
                 modifier = Modifier.height(150.dp), verticalArrangement = Arrangement.Center
             ) {
-                TextButton(
+                ScantionButton(
                     onClick = {
                         navController.navigate(AuthScreen.Login.route)
                     },
@@ -208,7 +208,7 @@ fun WalkthroughItem(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                TextButton(
+                ScantionButton(
                     onClick = { navController.navigate(AuthScreen.Register.route) },
                     text = stringResource(id = items.textSecond),
                     modifier = Modifier.fillMaxWidth(),

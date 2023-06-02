@@ -35,7 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.bangkit.scantion.navigation.AuthScreen
 import com.bangkit.scantion.ui.component.AuthSpacer
-import com.bangkit.scantion.ui.component.TextButton
+import com.bangkit.scantion.ui.component.ScantionButton
 
 @Composable
 fun Login(
@@ -114,7 +114,7 @@ fun ContentSection(
             visualTransformation = PasswordVisualTransformation(),
             label = { Text("Password") })
         AuthSpacer()
-        TextButton(
+        ScantionButton(
             enabled = emailText.isNotEmpty() && passwordText.isNotEmpty(),
             onClick = {
                 walktrhoughViewModel.saveOnBoardingState(completed = true)

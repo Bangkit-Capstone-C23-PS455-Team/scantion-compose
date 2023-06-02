@@ -11,13 +11,11 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,9 +23,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Info
@@ -57,13 +55,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextStyle
-import coil.compose.AsyncImage
-import com.bangkit.scantion.ui.component.TextButton
-import com.bangkit.scantion.ui.component.TextFieldQuestion
+import com.bangkit.scantion.ui.component.ScantionButton
 import com.bangkit.scantion.util.ComposeFileProvider
 
 
@@ -147,7 +141,6 @@ fun Examination(navController: NavHostController) {
         ) { page ->
             ExaminationItem(
                 page,
-                navController,
                 bodyPart,
                 howLong,
                 symptom,
@@ -162,9 +155,9 @@ fun Examination(navController: NavHostController) {
             )
         }
 
-        var isQuestionAnswered = bodyPart.isNotEmpty() && howLong.isNotEmpty() && symptom.isNotEmpty()
+        val isQuestionAnswered = bodyPart.isNotEmpty() && howLong.isNotEmpty() && symptom.isNotEmpty()
 
-        BottomSection(hasImage, isQuestionAnswered, size = items.size, index = pageState.currentPage, onNextClick = {
+        BottomSection(navController, hasImage, isQuestionAnswered, size = items.size, index = pageState.currentPage, onNextClick = {
             if (pageState.currentPage < items.size - 1) scope.launch {
                 pageState.animateScrollToPage(pageState.currentPage + 1)
             }
@@ -179,7 +172,6 @@ fun Examination(navController: NavHostController) {
 @Composable
 fun ExaminationItem(
     page: Int,
-    navController: NavHostController,
     bodyPart: String,
     symptom: String,
     howLong: String,
@@ -207,109 +199,8 @@ fun ExaminationItem(
             )
         }
         2 -> {
-
+            ResultPage()
         }
-    }
-}
-
-@Composable
-fun AddPhotoPage(
-    uri: Uri?,
-    photoUri: Uri?,
-    hasImage: Boolean,
-    singlePhotoPickerLauncher: ManagedActivityResultLauncher<PickVisualMediaRequest, Uri?>,
-    takePictureLauncher: ManagedActivityResultLauncher<Uri, Boolean>,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 20.dp, start = 16.dp, end = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            AsyncImage(
-                model = if (hasImage) photoUri else null,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .clip(shape = RoundedCornerShape(8.dp))
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.secondary,
-                        shape = RoundedCornerShape(8.dp)
-                    ),
-                contentScale = ContentScale.Crop,
-
-            )
-            if (!hasImage) {
-                Text(
-                    text = "Empty",
-                    style = TextStyle(color = MaterialTheme.colorScheme.secondary),
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Row(modifier = Modifier.fillMaxWidth(.5f)) {
-                TextButton(
-                    modifier = Modifier.fillMaxWidth().padding(end = 5.dp),
-                    onClick = {
-                        takePictureLauncher.launch(uri)
-                    },
-                    text = "Dari Kamera",
-                    outlineButton = hasImage
-                )
-            }
-            Row(modifier = Modifier.fillMaxWidth().padding(start = 5.dp)) {
-                TextButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        singlePhotoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                    ) },
-                    text = if (!hasImage) "Pilih Gambar" else "Ganti Gambar",
-                    outlineButton = hasImage
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun QuestionPage(
-    bodyPart: String,
-    symptom: String,
-    howLong: String,
-    onBodyPartChange: (String) -> Unit,
-    onSymptomChange: (String) -> Unit,
-    onHowLongChange: (String) -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 20.dp, start = 16.dp, end = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
-        TextFieldQuestion(
-            text = "Bagian kulit mana yang diperiksa?",
-            placeholder = "Bagian Kulit (misal: Tangan)",
-            value = bodyPart,
-            onChangeValue = onBodyPartChange
-        )
-        TextFieldQuestion(
-            text = "Sudah berapa lama masalah kulit ini muncul?",
-            placeholder = "Berapa lama (misal: 1 tahun 2 bulan)",
-            value = symptom,
-            onChangeValue = onSymptomChange
-        )
-        TextFieldQuestion(
-            text = "Apa saja gejala kulit yang anda alami?",
-            placeholder = "Gejala (misal: gatal, panas, kering)",
-            value = howLong,
-            onChangeValue = onHowLongChange
-        )
     }
 }
 
@@ -417,6 +308,7 @@ fun Indicator(i: Int, index: Int, items: ExaminationItems) {
 
 @Composable
 fun BottomSection(
+    navController: NavHostController,
     hasImage: Boolean,
     isQuestionAnswered: Boolean,
     size: Int,
@@ -424,10 +316,11 @@ fun BottomSection(
     onNextClick: () -> Unit = {},
     onPrevClick: () -> Unit = {}
 ) {
+    val isLastPage = index == size - 1
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(12.dp)
+            .padding(horizontal = 12.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -435,18 +328,24 @@ fun BottomSection(
             modifier = Modifier.fillMaxWidth()
         ) {
             // Previous Button
-            IconButton(
-                onClick = {
-                    if (index > 0) {
-                        onPrevClick.invoke()
-                    }
-                }, enabled = index > 0
-            ) {
-                AnimatedVisibility(
-                    index > 0, enter = fadeIn(), exit = fadeOut()
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.KeyboardArrowLeft, contentDescription = null
+            Row(modifier = Modifier.fillMaxWidth(.5f), horizontalArrangement = Arrangement.Start) {
+                AnimatedVisibility(index > 0, enter = fadeIn(), exit = fadeOut()) {
+                    ScantionButton(
+                        modifier = Modifier.fillMaxWidth().padding(end = 10.dp),
+                        onClick = {
+                            if (index > 0) {
+                                if (!isLastPage){
+                                    onPrevClick.invoke()
+                                } else {
+//                                    saveToPdf()
+                                }
+                            } },
+                        text = if (isLastPage) "Simpan PDF" else "Kembali",
+                        textStyle = MaterialTheme.typography.bodySmall,
+                        outlineButton = true,
+                        iconStart = !isLastPage,
+                        iconEnd = isLastPage,
+                        icon = if (isLastPage) Icons.Outlined.ArrowDropDown else Icons.Outlined.KeyboardArrowLeft
                     )
                 }
             }
@@ -456,22 +355,24 @@ fun BottomSection(
                     0 -> hasImage
                     1 -> isQuestionAnswered
                     else -> false
-            }
-
-            // Next Button
-            IconButton(
-                onClick = { onNextClick.invoke() },
-                enabled = enabledNext
-            ) {
-                AnimatedVisibility(
-                    visible = index < size - 1, enter = fadeIn(), exit = fadeOut()
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.KeyboardArrowRight, contentDescription = null
-                    )
                 }
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                ScantionButton(
+                    modifier = Modifier.fillMaxWidth().padding(start = 10.dp),
+                    enabled = if (isLastPage) true else enabledNext,
+                    onClick = { if (isLastPage) navController.popBackStack() else onNextClick.invoke() },
+                    text = if (isLastPage) "Selesai" else "Selanjutnya",
+                    textStyle = MaterialTheme.typography.bodySmall,
+                    iconEnd = true,
+                    icon = Icons.Outlined.KeyboardArrowRight
+                )
             }
         }
     }
+}
+
+fun saveToPdf() {
+    TODO("Not yet implemented")
 }
 

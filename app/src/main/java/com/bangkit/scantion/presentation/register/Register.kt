@@ -32,7 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.bangkit.scantion.navigation.AuthScreen
 import com.bangkit.scantion.ui.component.AuthSpacer
-import com.bangkit.scantion.ui.component.TextButton
+import com.bangkit.scantion.ui.component.ScantionButton
 
 @Composable
 fun Register(
@@ -123,7 +123,7 @@ fun ContentSection(navController: NavHostController) {
             visualTransformation = PasswordVisualTransformation(),
             label = { Text("Confirm Password") })
         AuthSpacer()
-        TextButton(
+        ScantionButton(
             enabled = nameText.isNotEmpty() && emailText.isNotEmpty() && passwordText.isNotEmpty() && confirmPasswordText.isNotEmpty(),
             onClick = {
                 navController.navigate(AuthScreen.Login.route) {
