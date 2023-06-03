@@ -1,7 +1,9 @@
 package com.bangkit.scantion.presentation.examination
 
+import android.app.Activity
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -16,19 +18,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowDropDown
-import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material3.Icon
@@ -56,44 +57,43 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.semantics
+import com.bangkit.scantion.R
 import com.bangkit.scantion.model.SkinCase
 import com.bangkit.scantion.ui.component.ScantionButton
 import com.bangkit.scantion.util.ComposeFileProvider
+import com.bangkit.scantion.util.checkPermissions
+import com.bangkit.scantion.util.requestPermission
+import com.bangkit.scantion.util.saveToPdf
 
 
-class ExaminationItems (
+class ExaminationItems(
     val pageName: String,
     val hint: String,
     val icon: ImageVector
-) {
-    companion object {
-        fun getData(): List<ExaminationItems> {
-            return listOf(
-                ExaminationItems(
-                    "Foto",
-                    "Tambahkan foto kulit anda yang ingin diperiksa.",
-                    Icons.Outlined.Add
-                ),
-                ExaminationItems(
-                    "Pertanyaan",
-                    "Jawablah beberapa pertanyaan berikut.",
-                    Icons.Outlined.Info
-                ),
-                ExaminationItems(
-                    "Hasil",
-                    "Ini lah hasil dari pemeriksaan masalah kulit anda.",
-                    Icons.Outlined.Check
-                )
-            )
-        }
-    }
-}
+)
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun Examination(navController: NavHostController) {
-    val items = ExaminationItems.getData()
+    val items = listOf(
+        ExaminationItems(
+            "Foto",
+            "Tambahkan foto kulit anda yang ingin diperiksa.",
+            ImageVector.vectorResource(id = R.drawable.ic_add_photo)
+        ),
+        ExaminationItems(
+            "Pertanyaan",
+            "Jawablah beberapa pertanyaan berikut.",
+            ImageVector.vectorResource(id = R.drawable.ic_question)
+        ),
+        ExaminationItems(
+            "Hasil",
+            "Ini lah hasil dari pemeriksaan masalah kulit anda.",
+            ImageVector.vectorResource(id = R.drawable.ic_result)
+        )
+    )
     val scope = rememberCoroutineScope()
     val pageState = rememberPagerState()
 
@@ -102,6 +102,9 @@ fun Examination(navController: NavHostController) {
     var symptom by rememberSaveable { mutableStateOf("") }
     var photoUri by remember { mutableStateOf<Uri?>(null) }
     var hasImage by remember { mutableStateOf(false) }
+
+    var isProcessDone by remember { mutableStateOf(false) }
+    if (pageState.currentPage == items.size - 1) isProcessDone = true
 
     val context = LocalContext.current
     var uri = ComposeFileProvider.getImageUri(context)
@@ -126,7 +129,6 @@ fun Examination(navController: NavHostController) {
             Log.d("test uri", photoUri.toString())
         }
     )
-    val saveState = remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopSection(items = items, index = pageState.currentPage, navController)
@@ -135,7 +137,7 @@ fun Examination(navController: NavHostController) {
             count = items.size,
             state = pageState,
             modifier = Modifier
-                .fillMaxHeight(0.9f)
+                .fillMaxHeight(.89f)
                 .fillMaxWidth(),
             userScrollEnabled = false
         ) { page ->
@@ -145,23 +147,35 @@ fun Examination(navController: NavHostController) {
                 howLong,
                 symptom,
                 onBodyPartChange = { bodyPart = it },
-                onSymptomChange = { symptom = it } ,
+                onSymptomChange = { symptom = it },
                 onHowLongChange = { howLong = it },
                 uri,
                 photoUri,
                 hasImage,
                 singlePhotoPickerLauncher,
-                takePictureLauncher
+                takePictureLauncher,
+                isProcessDone
             )
         }
 
-        val isQuestionAnswered = bodyPart.isNotEmpty() && howLong.isNotEmpty() && symptom.isNotEmpty()
+        val isQuestionAnswered =
+            bodyPart.isNotEmpty() && howLong.isNotEmpty() && symptom.isNotEmpty()
 
-        BottomSection(navController, hasImage, isQuestionAnswered, size = items.size, index = pageState.currentPage, onNextClick = {
-            if (pageState.currentPage < items.size - 1) scope.launch {
-                pageState.animateScrollToPage(pageState.currentPage + 1)
-            }
-        }) {
+        BottomSection(
+            navController,
+            bodyPart,
+            howLong,
+            symptom,
+            photoUri,
+            hasImage,
+            isQuestionAnswered,
+            size = items.size,
+            index = pageState.currentPage,
+            onNextClick = {
+                if (pageState.currentPage < items.size - 1) scope.launch {
+                    pageState.animateScrollToPage(pageState.currentPage + 1)
+                }
+            }) {
             if (pageState.currentPage + 1 > 1) scope.launch {
                 pageState.animateScrollToPage(pageState.currentPage - 1)
             }
@@ -182,12 +196,14 @@ fun ExaminationItem(
     photoUri: Uri?,
     hasImage: Boolean,
     singlePhotoPickerLauncher: ManagedActivityResultLauncher<PickVisualMediaRequest, Uri?>,
-    takePictureLauncher: ManagedActivityResultLauncher<Uri, Boolean>
+    takePictureLauncher: ManagedActivityResultLauncher<Uri, Boolean>,
+    isProcessDone: Boolean = false
 ) {
     when (page) {
         0 -> {
             AddPhotoPage(uri, photoUri, hasImage, singlePhotoPickerLauncher, takePictureLauncher)
         }
+
         1 -> {
             QuestionPage(
                 bodyPart,
@@ -198,17 +214,20 @@ fun ExaminationItem(
                 onHowLongChange
             )
         }
+
         2 -> {
-            ResultPage(
-                SkinCase(
-                    photoUri = photoUri.toString(),
-                    bodyPart = bodyPart,
-                    howLong = howLong,
-                    symptom = symptom,
-                    cancerType = "Melanoma",
-                    accuracy = .75f
+            if (isProcessDone) {
+                ResultPage(
+                    SkinCase(
+                        photoUri = photoUri.toString(),
+                        bodyPart = bodyPart,
+                        howLong = howLong,
+                        symptom = symptom,
+                        cancerType = "Melanoma",
+                        accuracy = .86f
+                    )
                 )
-            )
+            }
         }
     }
 }
@@ -216,7 +235,7 @@ fun ExaminationItem(
 @Composable
 fun TopSection(items: List<ExaminationItems>, index: Int, navController: NavHostController) {
     val size = items.size
-    val progress = (index.toFloat() + 1) / (items.size + 1)
+    val progress = if (index == size - 1) (size + 1).toFloat() else (index.toFloat() + 1) / (items.size + 1)
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
         animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
@@ -263,7 +282,7 @@ fun TopSection(items: List<ExaminationItems>, index: Int, navController: NavHost
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(50.dp),
             ) {
-                for (i in 0 until size){
+                for (i in 0 until size) {
                     Indicator(i, index, items[i])
                 }
             }
@@ -288,8 +307,10 @@ fun TopSection(items: List<ExaminationItems>, index: Int, navController: NavHost
 @Composable
 fun Indicator(i: Int, index: Int, items: ExaminationItems) {
     val isDone = index >= i
-    val boxColor = if (isDone) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-    val iconColor = if (isDone) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primary
+    val boxColor =
+        if (isDone) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+    val iconColor =
+        if (isDone) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primary
     Column(
         modifier = Modifier.height(80.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -305,7 +326,10 @@ fun Indicator(i: Int, index: Int, items: ExaminationItems) {
             Icon(
                 imageVector = items.icon,
                 contentDescription = "icon indicator",
-                tint = iconColor
+                tint = iconColor,
+                modifier = Modifier
+                    .width(32.dp)
+                    .aspectRatio(1f)
             )
         }
         Text(
@@ -318,6 +342,10 @@ fun Indicator(i: Int, index: Int, items: ExaminationItems) {
 @Composable
 fun BottomSection(
     navController: NavHostController,
+    bodyPart: String,
+    symptom: String,
+    howLong: String,
+    photoUri: Uri?,
     hasImage: Boolean,
     isQuestionAnswered: Boolean,
     size: Int,
@@ -325,36 +353,60 @@ fun BottomSection(
     onNextClick: () -> Unit = {},
     onPrevClick: () -> Unit = {}
 ) {
-    val isLastPage = index == size - 1
+    val isOnResult = index == size - 1
+    val isLastInput = index == size - 2
+
+    val ctx = LocalContext.current
+    val activity = (LocalContext.current as? Activity)
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp)
+            .fillMaxHeight(),
+        contentAlignment = Alignment.Center
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp)
         ) {
             // Previous Button
             Row(modifier = Modifier.fillMaxWidth(.5f), horizontalArrangement = Arrangement.Start) {
                 AnimatedVisibility(index > 0, enter = fadeIn(), exit = fadeOut()) {
                     ScantionButton(
-                        modifier = Modifier.fillMaxWidth().padding(end = 10.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(end = 10.dp),
                         onClick = {
                             if (index > 0) {
-                                if (!isLastPage){
+                                if (!isOnResult) {
                                     onPrevClick.invoke()
                                 } else {
-//                                    saveToPdf()
+                                    if (checkPermissions(ctx)) {
+                                        Toast.makeText(ctx, "Permissions Granted..", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        requestPermission(activity!!)
+                                    }
+                                    saveToPdf(ctx, SkinCase(
+                                        photoUri = photoUri.toString(),
+                                        bodyPart = bodyPart,
+                                        howLong = howLong,
+                                        symptom = symptom,
+                                        cancerType = "Melanoma",
+                                        accuracy = .86f
+                                    )
+                                    )
                                 }
-                            } },
-                        text = if (isLastPage) "Simpan PDF" else "Kembali",
+                            }
+                        },
+                        text = if (isOnResult) "Simpan PDF" else "Kembali",
                         textStyle = MaterialTheme.typography.bodySmall,
                         outlineButton = true,
-                        iconStart = !isLastPage,
-                        iconEnd = isLastPage,
-                        icon = if (isLastPage) Icons.Outlined.ArrowDropDown else Icons.Outlined.KeyboardArrowLeft
+                        iconStart = !isOnResult,
+                        iconEnd = isOnResult,
+                        icon = if (isOnResult) Icons.Outlined.ArrowDropDown else Icons.Outlined.KeyboardArrowLeft
                     )
                 }
             }
@@ -368,10 +420,14 @@ fun BottomSection(
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 ScantionButton(
-                    modifier = Modifier.fillMaxWidth().padding(start = 10.dp),
-                    enabled = if (isLastPage) true else enabledNext,
-                    onClick = { if (isLastPage) navController.popBackStack() else onNextClick.invoke() },
-                    text = if (isLastPage) "Selesai" else "Selanjutnya",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 10.dp),
+                    enabled = if (isOnResult) true else enabledNext,
+                    onClick = {
+                        if (isOnResult) navController.popBackStack() else onNextClick.invoke()
+                    },
+                    text = if (isOnResult) "Selesai" else if (isLastInput) "Proses" else "Selanjutnya",
                     textStyle = MaterialTheme.typography.bodySmall,
                     iconEnd = true,
                     icon = Icons.Outlined.KeyboardArrowRight
@@ -380,8 +436,3 @@ fun BottomSection(
         }
     }
 }
-
-fun saveToPdf() {
-    TODO("Not yet implemented")
-}
-

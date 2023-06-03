@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,8 +19,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
@@ -36,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -46,16 +50,15 @@ import kotlinx.coroutines.delay
 @Composable
 fun ResultPage(skinCase: SkinCase) {
     val name = "Alfachri Ghani"
+    val uriHandler = LocalUriHandler.current
+    val hospitalParamSearch = "rumah+sakit"
+
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize().verticalScroll(rememberScrollState())
     ) {
         ColumnPartResult {
-            Text(
-                text = "Detail Pemeriksaan",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
+            TitleTextResult(text = "Detail Pemeriksaan")
             RowSpaceBetweenTwoText(
                 modifier = Modifier.fillMaxWidth(),
                 textFirst = "Nama",
@@ -69,14 +72,10 @@ fun ResultPage(skinCase: SkinCase) {
         }
         ResultSpacer()
         ColumnPartResult {
-            Text(
-                text = "Hasil",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
+            TitleTextResult(text = "Hasil")
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
@@ -110,7 +109,7 @@ fun ResultPage(skinCase: SkinCase) {
                         PercentageCircleBox(accuracy = skinCase.accuracy, 110.dp)
                         Text(
                             text = skinCase.cancerType,
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -118,6 +117,44 @@ fun ResultPage(skinCase: SkinCase) {
             }
         }
         ResultSpacer()
+        ColumnPartResult {
+            TitleTextResult(text = "Keterangan")
+            RowSpaceBetweenTwoText(
+                modifier = Modifier.fillMaxWidth(),
+                textFirst = "Bagian kulit",
+                textSecond = skinCase.bodyPart,
+                oneThirdFirst = true
+            )
+            RowSpaceBetweenTwoText(
+                modifier = Modifier.fillMaxWidth(),
+                textFirst = "Sejak",
+                textSecond = skinCase.howLong,
+                oneThirdFirst = true
+            )
+            RowSpaceBetweenTwoText(
+                modifier = Modifier.fillMaxWidth(),
+                textFirst = "Gejala",
+                textSecond = skinCase.symptom,
+                oneThirdFirst = true
+            )
+        }
+        ResultSpacer()
+        ColumnPartResult {
+            Text(
+                text = "Ingin memastikan pemeriksaan",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Cari rumah sakit",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable {
+                    uriHandler.openUri("https://www.google.co.id/maps/search/$hospitalParamSearch/")
+                }
+            )
+        }
     }
 }
 
@@ -140,7 +177,7 @@ fun PercentageCircleBox(accuracy: Float, circleSize: Dp, strokeWidth: Dp = Progr
     )
 
     LaunchedEffect(key1 = true){
-        delay(4000)
+        delay(500)
         animationProgress=true
         accuracyInt = (accuracy * 100).toInt()
     }
@@ -197,19 +234,33 @@ fun ColumnPartResult(
 fun RowSpaceBetweenTwoText(
     modifier: Modifier,
     textFirst: String,
-    textSecond: String
+    textSecond: String,
+    oneThirdFirst: Boolean = false
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = if (oneThirdFirst) Arrangement.Start else Arrangement.SpaceBetween
     ) {
         Text(
             text = textFirst,
             style = MaterialTheme.typography.titleSmall,
+            modifier = if (oneThirdFirst) Modifier.fillMaxWidth(.35f) else Modifier
         )
         Text(
             text = textSecond,
             style = MaterialTheme.typography.titleSmall,
+            modifier = if (oneThirdFirst) Modifier.fillMaxWidth() else Modifier
         )
     }
+}
+
+@Composable
+fun TitleTextResult(
+    text: String
+){
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold
+    )
 }

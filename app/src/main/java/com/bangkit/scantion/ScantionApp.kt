@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Create
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.Button
@@ -24,6 +23,7 @@ import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
@@ -78,7 +78,7 @@ fun NavBar(
         NavBarItem(
             name = "Periksa",
             route = HomeScreen.Examination.route,
-            icon = Icons.Rounded.Create,
+            icon = ImageVector.vectorResource(id = R.drawable.ic_examination),
         ),
         NavBarItem(
             name = "Profil",
@@ -121,7 +121,9 @@ fun NavBar(
         }
         
         Button(
-            modifier = Modifier.fillMaxWidth(.28f).height(60.dp),
+            modifier = Modifier
+                .fillMaxWidth(.28f)
+                .height(50.dp),
             onClick = { navController.navigate(navBarItems[1].route) },
         ) {
             Icon(navBarItems[1].icon, contentDescription = "create examination")
