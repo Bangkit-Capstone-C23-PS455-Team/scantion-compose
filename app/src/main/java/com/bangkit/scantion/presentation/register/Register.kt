@@ -1,5 +1,6 @@
 package com.bangkit.scantion.presentation.register
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,14 +31,11 @@ import androidx.navigation.NavHostController
 import com.bangkit.scantion.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import com.bangkit.scantion.data.remote.network.ApiConfig
+import com.bangkit.scantion.data.repository.UserRepository
 import com.bangkit.scantion.model.User
 import com.bangkit.scantion.navigation.AuthScreen
 import com.bangkit.scantion.ui.component.AuthSpacer
 import com.bangkit.scantion.ui.component.ScantionButton
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 @Composable
 fun Register(
@@ -132,7 +130,9 @@ fun ContentSection(navController: NavHostController) {
         ScantionButton(
             enabled = nameText.isNotEmpty() && emailText.isNotEmpty() && passwordText.isNotEmpty() && confirmPasswordText.isNotEmpty() && passwordText == confirmPasswordText,
             onClick = {
-                postData(navController, User(nameText, emailText, passwordText, 0, "sadf", "asfd"))
+                val user = User(nameText, emailText, passwordText, 0, "sadf", "asfd")
+                val userRepository = UserRepository()
+                performRegistration(navController, userRepository, user)
             },
             text = stringResource(id = R.string.register_text),
             modifier = Modifier.fillMaxWidth(),
@@ -140,17 +140,18 @@ fun ContentSection(navController: NavHostController) {
     }
 }
 
-private fun postData(navController: NavHostController, user: User) {
-    val call: Call<User?>? = ApiConfig.getApiService().register(user)
-
-    call!!.enqueue(object : Callback<User?> {
-        override fun onResponse(call: Call<User?>, response: Response<User?>) {
+private fun performRegistration(navController: NavHostController, userRepository: UserRepository, user: User) {
+    userRepository.registerUser(user,
+        onSuccess = { result ->
+            // Handle the successful response here
+            Log.d("API Response", result)
             navController.navigate(AuthScreen.Login.route) {
                 popUpTo(AuthScreen.Walkthrough.route)
             }
+        },
+        onError = { errorMessage ->
+            // Handle the error here
+            Log.e("API Error", errorMessage)
         }
-
-        override fun onFailure(call: Call<User?>, t: Throwable) {
-        }
-    })
+    )
 }

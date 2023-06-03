@@ -1,7 +1,7 @@
 package com.bangkit.scantion.di
 
 import android.content.Context
-import com.bangkit.scantion.data.DataStoreRepository
+import com.bangkit.scantion.data.repository.DataStoreRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

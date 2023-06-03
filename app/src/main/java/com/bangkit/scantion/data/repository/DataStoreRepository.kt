@@ -1,4 +1,4 @@
-package com.bangkit.scantion.data
+package com.bangkit.scantion.data.repository
 
 import android.content.Context
 import androidx.datastore.core.DataStore

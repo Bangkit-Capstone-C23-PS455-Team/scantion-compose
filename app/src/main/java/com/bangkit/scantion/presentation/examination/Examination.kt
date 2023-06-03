@@ -57,6 +57,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.semantics
+import com.bangkit.scantion.model.SkinCase
 import com.bangkit.scantion.ui.component.ScantionButton
 import com.bangkit.scantion.util.ComposeFileProvider
 
@@ -106,15 +107,14 @@ fun Examination(navController: NavHostController) {
     var uri = ComposeFileProvider.getImageUri(context)
 
     val takePictureLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture(),
-        onResult = { success ->
-            if (success) {
-                photoUri = uri
-                hasImage = true
-                uri = ComposeFileProvider.getImageUri(context)
-            }
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            photoUri = uri
+            hasImage = true
+            uri = ComposeFileProvider.getImageUri(context)
         }
-    )
+    }
 
     val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -199,7 +199,16 @@ fun ExaminationItem(
             )
         }
         2 -> {
-            ResultPage()
+            ResultPage(
+                SkinCase(
+                    photoUri = photoUri.toString(),
+                    bodyPart = bodyPart,
+                    howLong = howLong,
+                    symptom = symptom,
+                    cancerType = "Melanoma",
+                    accuracy = .75f
+                )
+            )
         }
     }
 }
