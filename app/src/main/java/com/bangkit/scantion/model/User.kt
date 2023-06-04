@@ -1,6 +1,15 @@
 package com.bangkit.scantion.model
 
-data class User(
+data class UserLog(
+    var token: String,
+    var name: String,
+    var email: String,
+    var age: Int,
+    var province: String,
+    var city: String
+)
+
+data class UserReg(
     var name: String,
     var email: String,
     var password: String,

@@ -5,14 +5,14 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bangkit.scantion.data.repository.DataStoreRepository
+import com.bangkit.scantion.data.repository.LoginDataStoreRepository
 import com.bangkit.scantion.navigation.Graph
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class SplashViewModel @Inject constructor(
-    private val repository: DataStoreRepository
+    private val repository: LoginDataStoreRepository
 ) : ViewModel() {
 
     private val _isLoading: MutableState<Boolean> = mutableStateOf(true)
@@ -23,8 +23,8 @@ class SplashViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            repository.readOnBoardingState().collect { completed ->
-                if (completed) {
+            repository.readLoginState().collect { userLog ->
+                if (userLog != null) {
                     _startDestination.value = Graph.HOME
                 } else {
                     _startDestination.value = Graph.AUTHENTICATION

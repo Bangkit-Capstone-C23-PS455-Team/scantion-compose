@@ -30,16 +30,17 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.bangkit.scantion.R
 import com.bangkit.scantion.navigation.Graph
-import com.bangkit.scantion.viewmodel.WalktrhoughViewModel
+import com.bangkit.scantion.viewmodel.LoginViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.navigation.AuthScreen
 import com.bangkit.scantion.ui.component.AuthSpacer
 import com.bangkit.scantion.ui.component.ScantionButton
 
 @Composable
 fun Login(
-    navController: NavHostController, walktrhoughViewModel: WalktrhoughViewModel = hiltViewModel()
+    navController: NavHostController, loginViewModel: LoginViewModel = hiltViewModel()
 ) {
     Column(
         modifier = Modifier
@@ -47,7 +48,7 @@ fun Login(
             .padding(horizontal = 25.dp)
     ) {
         TopSection(navController = navController)
-        ContentSection(navController = navController, walktrhoughViewModel)
+        ContentSection(navController = navController, loginViewModel)
         BottomSection(navController = navController)
     }
 }
@@ -88,7 +89,7 @@ fun TopSection(navController: NavHostController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContentSection(
-    navController: NavHostController, walktrhoughViewModel: WalktrhoughViewModel
+    navController: NavHostController, loginViewModel: LoginViewModel
 ) {
     var emailText by rememberSaveable { mutableStateOf("") }
     var passwordText by rememberSaveable { mutableStateOf("") }
@@ -117,7 +118,8 @@ fun ContentSection(
         ScantionButton(
             enabled = emailText.isNotEmpty() && passwordText.isNotEmpty(),
             onClick = {
-                walktrhoughViewModel.saveOnBoardingState(completed = true)
+                val userLog = UserLog(token = "123456789", name = "Alfachri Ghani", email = emailText, age = -1, province = "", city = "")
+                loginViewModel.saveLoginState(userLog)
                 navController.navigate(Graph.HOME) {
                     popUpTo(Graph.AUTHENTICATION) { inclusive = true }
                 }

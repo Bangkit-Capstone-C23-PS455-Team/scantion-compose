@@ -45,11 +45,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.bangkit.scantion.model.SkinCase
+import com.bangkit.scantion.model.UserLog
 import kotlinx.coroutines.delay
 
 @Composable
-fun ResultPage(skinCase: SkinCase) {
-    val name = "Alfachri Ghani"
+fun ResultPage(userLog: UserLog, skinCase: SkinCase) {
+    val name = userLog.name
     val uriHandler = LocalUriHandler.current
     val hospitalParamSearch = "rumah+sakit"
 

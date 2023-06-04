@@ -32,7 +32,7 @@ import com.bangkit.scantion.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.bangkit.scantion.data.repository.UserRepository
-import com.bangkit.scantion.model.User
+import com.bangkit.scantion.model.UserReg
 import com.bangkit.scantion.navigation.AuthScreen
 import com.bangkit.scantion.ui.component.AuthSpacer
 import com.bangkit.scantion.ui.component.ScantionButton
@@ -130,9 +130,9 @@ fun ContentSection(navController: NavHostController) {
         ScantionButton(
             enabled = nameText.isNotEmpty() && emailText.isNotEmpty() && passwordText.isNotEmpty() && confirmPasswordText.isNotEmpty() && passwordText == confirmPasswordText,
             onClick = {
-                val user = User(nameText, emailText, passwordText, 0, "sadf", "asfd")
+                val userReg = UserReg(nameText, emailText, passwordText, 0, "sadf", "asfd")
                 val userRepository = UserRepository()
-                performRegistration(navController, userRepository, user)
+                performRegistration(navController, userRepository, userReg)
             },
             text = stringResource(id = R.string.register_text),
             modifier = Modifier.fillMaxWidth(),
@@ -140,8 +140,8 @@ fun ContentSection(navController: NavHostController) {
     }
 }
 
-private fun performRegistration(navController: NavHostController, userRepository: UserRepository, user: User) {
-    userRepository.registerUser(user,
+private fun performRegistration(navController: NavHostController, userRepository: UserRepository, userReg: UserReg) {
+    userRepository.registerUser(userReg,
         onSuccess = { result ->
             // Handle the successful response here
             Log.d("API Response", result)

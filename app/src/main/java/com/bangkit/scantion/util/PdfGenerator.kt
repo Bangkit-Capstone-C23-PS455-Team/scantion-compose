@@ -1,6 +1,7 @@
 package com.bangkit.scantion.util
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
@@ -15,8 +16,8 @@ import com.bangkit.scantion.R
 import com.bangkit.scantion.model.SkinCase
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
 
+@SuppressLint("QueryPermissionsNeeded")
 fun saveToPdf(context: Context, skinCase: SkinCase) {
     val name = "aji"
     val pageWidth = 792
@@ -114,12 +115,19 @@ fun saveToPdf(context: Context, skinCase: SkinCase) {
 
     pdfDocument.finishPage(page)
 
-    val file = File(Environment.getExternalStorageDirectory(), "scantion_${skinCase.dateCreated}.pdf")
+    val folderName = "Scantion"
+    val folder = File(Environment.getExternalStorageDirectory(), folderName)
+    if (!folder.exists()) {
+        folder.mkdirs()
+    }
+
+    val fileName = "scantion_${skinCase.dateCreated}.pdf"
+    val file = File(folder, fileName)
 
     try {
         pdfDocument.writeTo(FileOutputStream(file))
 
-        Toast.makeText(context, "PDF file generated..", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "PDF file generated in:\n$folderName\\$fileName", Toast.LENGTH_SHORT).show()
     } catch (e: Exception) {
         e.printStackTrace()
 
@@ -133,26 +141,41 @@ private fun uriToCompressedBitmap(uri: Uri, context: Context): Bitmap? {
     val inputStream = context.contentResolver.openInputStream(uri)
     val bitmap = BitmapFactory.decodeStream(inputStream)
 
-    // Calculate the target width and height for the compressed bitmap
-    val targetWidth = 800 // Adjust the target width as needed
-    val targetHeight = (bitmap.height.toFloat() / bitmap.width.toFloat() * targetWidth).toInt()
+    val targetWidth = 400
 
-    val compressedBitmap = Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, true)
+    val croppedBitmap = cropToAspectRatio(bitmap, 1f)
+    val resizedBitmap = Bitmap.createScaledBitmap(croppedBitmap, targetWidth, targetWidth, true)
 
-    // Close the input stream
     inputStream?.close()
 
-    return compressedBitmap
+    return resizedBitmap
 }
 
-fun uriToBitmap(uri: Uri, inputStreamProvider: (Uri) -> InputStream?): Bitmap? {
-    return try {
-        val inputStream = inputStreamProvider(uri)
-        BitmapFactory.decodeStream(inputStream)
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
+private fun cropToAspectRatio(bitmap: Bitmap, aspectRatio: Float): Bitmap {
+    val width = bitmap.width
+    val height = bitmap.height
+
+    val targetWidth: Int
+    val targetHeight: Int
+    val x: Int
+    val y: Int
+
+    if (width > height * aspectRatio) {
+        targetWidth = (height * aspectRatio).toInt()
+        targetHeight = height
+        x = (width - targetWidth) / 2
+        y = 0
+    } else {
+        targetWidth = width
+        targetHeight = (width / aspectRatio).toInt()
+        x = 0
+        y = (height - targetHeight) / 2
     }
+
+    val matrix = Matrix()
+    matrix.setRectToRect(RectF(0f, 0f, width.toFloat(), height.toFloat()), RectF(0f, 0f, targetWidth.toFloat(), targetHeight.toFloat()), Matrix.ScaleToFit.CENTER)
+
+    return Bitmap.createBitmap(bitmap, x, y, targetWidth, targetHeight, matrix, true)
 }
 
 fun checkPermissions(context: Context): Boolean {

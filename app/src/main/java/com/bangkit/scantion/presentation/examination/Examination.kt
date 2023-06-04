@@ -1,5 +1,6 @@
 package com.bangkit.scantion.presentation.examination
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.net.Uri
 import android.util.Log
@@ -59,13 +60,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.semantics
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.bangkit.scantion.R
 import com.bangkit.scantion.model.SkinCase
+import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.ui.component.ScantionButton
 import com.bangkit.scantion.util.ComposeFileProvider
 import com.bangkit.scantion.util.checkPermissions
 import com.bangkit.scantion.util.requestPermission
 import com.bangkit.scantion.util.saveToPdf
+import com.bangkit.scantion.viewmodel.HomeViewModel
 
 
 class ExaminationItems(
@@ -74,9 +78,14 @@ class ExaminationItems(
     val icon: ImageVector
 )
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun Examination(navController: NavHostController) {
+fun Examination(
+    navController: NavHostController,
+    homeViewModel: HomeViewModel = hiltViewModel()
+) {
+    val userLog = homeViewModel.userLog.value
     val items = listOf(
         ExaminationItems(
             "Foto",
@@ -141,21 +150,24 @@ fun Examination(navController: NavHostController) {
                 .fillMaxWidth(),
             userScrollEnabled = false
         ) { page ->
-            ExaminationItem(
-                page,
-                bodyPart,
-                howLong,
-                symptom,
-                onBodyPartChange = { bodyPart = it },
-                onSymptomChange = { symptom = it },
-                onHowLongChange = { howLong = it },
-                uri,
-                photoUri,
-                hasImage,
-                singlePhotoPickerLauncher,
-                takePictureLauncher,
-                isProcessDone
-            )
+            if (userLog != null) {
+                ExaminationItem(
+                    userLog,
+                    page,
+                    bodyPart,
+                    howLong,
+                    symptom,
+                    onBodyPartChange = { bodyPart = it },
+                    onSymptomChange = { symptom = it },
+                    onHowLongChange = { howLong = it },
+                    uri,
+                    photoUri,
+                    hasImage,
+                    singlePhotoPickerLauncher,
+                    takePictureLauncher,
+                    isProcessDone
+                )
+            }
         }
 
         val isQuestionAnswered =
@@ -185,6 +197,7 @@ fun Examination(navController: NavHostController) {
 
 @Composable
 fun ExaminationItem(
+    userLog: UserLog,
     page: Int,
     bodyPart: String,
     symptom: String,
@@ -218,6 +231,7 @@ fun ExaminationItem(
         2 -> {
             if (isProcessDone) {
                 ResultPage(
+                    userLog,
                     SkinCase(
                         photoUri = photoUri.toString(),
                         bodyPart = bodyPart,
@@ -380,24 +394,24 @@ fun BottomSection(
                             .fillMaxWidth()
                             .padding(end = 10.dp),
                         onClick = {
+                            val skinCase = SkinCase(
+                                photoUri = photoUri.toString(),
+                                bodyPart = bodyPart,
+                                howLong = howLong,
+                                symptom = symptom,
+                                cancerType = "Melanoma",
+                                accuracy = .86f
+                            )
                             if (index > 0) {
                                 if (!isOnResult) {
                                     onPrevClick.invoke()
                                 } else {
                                     if (checkPermissions(ctx)) {
                                         Toast.makeText(ctx, "Permissions Granted..", Toast.LENGTH_SHORT).show()
+                                        saveToPdf(ctx, skinCase)
                                     } else {
                                         requestPermission(activity!!)
                                     }
-                                    saveToPdf(ctx, SkinCase(
-                                        photoUri = photoUri.toString(),
-                                        bodyPart = bodyPart,
-                                        howLong = howLong,
-                                        symptom = symptom,
-                                        cancerType = "Melanoma",
-                                        accuracy = .86f
-                                    )
-                                    )
                                 }
                             }
                         },

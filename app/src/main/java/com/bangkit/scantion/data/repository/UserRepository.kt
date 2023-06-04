@@ -3,7 +3,7 @@ package com.bangkit.scantion.data.repository
 import com.bangkit.scantion.data.remote.network.ApiConfig
 import com.bangkit.scantion.data.remote.network.ApiService
 import com.bangkit.scantion.data.remote.response.RegisterResponse
-import com.bangkit.scantion.model.User
+import com.bangkit.scantion.model.UserReg
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -11,8 +11,8 @@ import retrofit2.Response
 class UserRepository {
     private val apiService: ApiService = ApiConfig.getApiService()
 
-    fun registerUser(user: User, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
-        val call: Call<RegisterResponse> = apiService.register(user)
+    fun registerUser(userReg: UserReg, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+        val call: Call<RegisterResponse> = apiService.register(userReg)
 
         call.enqueue(object : Callback<RegisterResponse> {
             override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {

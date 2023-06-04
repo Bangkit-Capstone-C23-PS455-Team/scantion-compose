@@ -15,11 +15,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.bangkit.scantion.navigation.Graph
-import com.bangkit.scantion.viewmodel.WalktrhoughViewModel
+import com.bangkit.scantion.viewmodel.LoginViewModel
 
 @Composable
 fun Profile(
-    navController: NavHostController, walktrhoughViewModel: WalktrhoughViewModel = hiltViewModel()
+    navController: NavHostController, loginViewModel: LoginViewModel = hiltViewModel()
 ) {
     Box(
         modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
@@ -31,7 +31,7 @@ fun Profile(
             Button(modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.medium,
                 onClick = {
-                    walktrhoughViewModel.saveOnBoardingState(false)
+                    loginViewModel.logout()
                     navController.popBackStack()
                     navController.navigate(Graph.AUTHENTICATION)
                 }) {

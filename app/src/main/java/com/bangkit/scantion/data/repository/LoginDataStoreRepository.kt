@@ -3,32 +3,33 @@ package com.bangkit.scantion.data.repository
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.bangkit.scantion.model.UserLog
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "on_boarding_pref")
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_login_data")
 
-class DataStoreRepository(context: Context) {
-
+class LoginDataStoreRepository(context: Context) {
     private object PreferencesKey {
-        val onBoardingKey = booleanPreferencesKey(name = "on_boarding_completed")
+        val userLogKey = stringPreferencesKey(name = "user_log")
     }
 
-    private val dataStore = context.dataStore
+    private val dataStore: DataStore<Preferences> = context.dataStore
 
-    suspend fun saveOnBoardingState(completed: Boolean) {
+    suspend fun saveLoginState(userLog: UserLog) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKey.onBoardingKey] = completed
+            preferences[PreferencesKey.userLogKey] = Gson().toJson(userLog)
         }
     }
 
-    fun readOnBoardingState(): Flow<Boolean> {
+    fun readLoginState(): Flow<UserLog?> {
         return dataStore.data
             .catch { exception ->
                 if (exception is IOException) {
@@ -38,8 +39,14 @@ class DataStoreRepository(context: Context) {
                 }
             }
             .map { preferences ->
-                val onBoardingState = preferences[PreferencesKey.onBoardingKey] ?: false
-                onBoardingState
+                val userLogJson = preferences[PreferencesKey.userLogKey]
+                userLogJson?.let { Gson().fromJson(it, UserLog::class.java) }
             }
+    }
+
+    suspend fun logout() {
+        dataStore.edit { preferences ->
+            preferences.remove(PreferencesKey.userLogKey)
+        }
     }
 }

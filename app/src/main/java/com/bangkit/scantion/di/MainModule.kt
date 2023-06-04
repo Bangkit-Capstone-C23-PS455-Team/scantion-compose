@@ -1,7 +1,7 @@
 package com.bangkit.scantion.di
 
 import android.content.Context
-import com.bangkit.scantion.data.repository.DataStoreRepository
+import com.bangkit.scantion.data.repository.LoginDataStoreRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,5 +17,5 @@ object MainModule {
     @Singleton
     fun provideDataStoreRepository(
         @ApplicationContext context: Context
-    ) = DataStoreRepository(context = context)
+    ) = LoginDataStoreRepository(context = context)
 }

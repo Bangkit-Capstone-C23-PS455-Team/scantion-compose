@@ -1,5 +1,6 @@
 package com.bangkit.scantion.presentation.home
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,12 +28,20 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.bangkit.scantion.navigation.HomeScreen
 import com.bangkit.scantion.R
+import com.bangkit.scantion.viewmodel.HomeViewModel
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun Home(navController: NavHostController) {
+fun Home(
+    navController: NavHostController,
+    homeViewModel: HomeViewModel = hiltViewModel()
+) {
+    val userLog = homeViewModel.userLog.value
+    val name = userLog?.name
     Box(
         modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
     ) {
@@ -43,7 +52,7 @@ fun Home(navController: NavHostController) {
                 modifier = Modifier
                     .padding(vertical = 30.dp)
                     .padding(horizontal = 16.dp),
-                text = "Halo, Aji",
+                text = "Halo, $name",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
