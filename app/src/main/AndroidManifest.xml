@@ -33,12 +33,12 @@
         </activity>
         <provider
             android:name=".util.ComposeFileProvider"
-            android:authorities="com.bangkit.scantion.fileprovider"
+            android:authorities="${applicationId}.fileprovider"
             android:grantUriPermissions="true"
             android:exported="false">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/filepaths" />
+                android:resource="@xml/file_path" />
         </provider>
     </application>
 

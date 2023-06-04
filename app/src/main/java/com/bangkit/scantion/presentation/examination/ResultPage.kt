@@ -163,16 +163,17 @@ fun ResultPage(userLog: UserLog, skinCase: SkinCase) {
 fun PercentageCircleBox(accuracy: Float, circleSize: Dp, strokeWidth: Dp = ProgressIndicatorDefaults.CircularStrokeWidth) {
     var accuracyInt by remember { mutableIntStateOf(0) }
     var animationProgress by remember { mutableStateOf(false) }
+    val animationDuration = 2500
 
     val currentPercentage by animateFloatAsState(
         targetValue = if(animationProgress) accuracy else 0f,
-        animationSpec = tween(durationMillis = 4000, easing = FastOutSlowInEasing)
+        animationSpec = tween(durationMillis = animationDuration, easing = FastOutSlowInEasing)
     )
 
     val accuracyProgress by animateIntAsState(
         targetValue = accuracyInt,
         animationSpec = tween(
-            durationMillis = 4000,
+            durationMillis = animationDuration,
             easing = FastOutSlowInEasing
         )
     )

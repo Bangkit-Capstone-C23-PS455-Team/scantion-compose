@@ -1,7 +1,8 @@
 package com.bangkit.scantion.presentation.examination
 
+import android.content.Context
 import android.net.Uri
-import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
@@ -26,15 +27,35 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.bangkit.scantion.ui.component.ScantionButton
+import com.bangkit.scantion.util.ComposeFileProvider
 
 @Composable
 fun AddPhotoPage(
-    uri: Uri?,
+    context: Context,
     photoUri: Uri?,
     hasImage: Boolean,
-    singlePhotoPickerLauncher: ManagedActivityResultLauncher<PickVisualMediaRequest, Uri?>,
-    takePictureLauncher: ManagedActivityResultLauncher<Uri, Boolean>,
+    onPhotoUriChange: (Uri) -> Unit,
+    onHasImageChange: (Boolean) -> Unit
 ) {
+    var tempUri: Uri? = null
+    val takePictureLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempUri != null) {
+            onPhotoUriChange.invoke(tempUri!!)
+            onHasImageChange.invoke(true)
+        }
+    }
+
+    val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uriResult ->
+        if (photoUri != uriResult && uriResult != null) {
+            onPhotoUriChange.invoke(uriResult)
+            onHasImageChange.invoke(true)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -72,7 +93,8 @@ fun AddPhotoPage(
                 ScantionButton(
                     modifier = Modifier.fillMaxWidth().padding(end = 5.dp),
                     onClick = {
-                        takePictureLauncher.launch(uri)
+                        tempUri = ComposeFileProvider.getImageUri(context)
+                        takePictureLauncher.launch(tempUri)
                     },
                     text = "Dari Kamera",
                     outlineButton = hasImage

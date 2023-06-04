@@ -91,7 +91,7 @@ fun saveToPdf(context: Context, skinCase: SkinCase) {
 
     // Load the image from the URI and compress it
     val imageUri = Uri.parse(skinCase.photoUri)
-    val imageBitmap = uriToCompressedBitmap(imageUri, context)
+    val imageBitmap = uriToBitmap(imageUri, context)
 
     // Draw the image on the PDF page
     if (imageBitmap != null) {
@@ -137,45 +137,13 @@ fun saveToPdf(context: Context, skinCase: SkinCase) {
     pdfDocument.close()
 }
 
-private fun uriToCompressedBitmap(uri: Uri, context: Context): Bitmap? {
+private fun uriToBitmap(uri: Uri, context: Context): Bitmap? {
     val inputStream = context.contentResolver.openInputStream(uri)
     val bitmap = BitmapFactory.decodeStream(inputStream)
-
-    val targetWidth = 400
-
-    val croppedBitmap = cropToAspectRatio(bitmap, 1f)
-    val resizedBitmap = Bitmap.createScaledBitmap(croppedBitmap, targetWidth, targetWidth, true)
-
+    val side = 320
+    val bitmapImage = Bitmap.createScaledBitmap(bitmap, side, side, true)
     inputStream?.close()
-
-    return resizedBitmap
-}
-
-private fun cropToAspectRatio(bitmap: Bitmap, aspectRatio: Float): Bitmap {
-    val width = bitmap.width
-    val height = bitmap.height
-
-    val targetWidth: Int
-    val targetHeight: Int
-    val x: Int
-    val y: Int
-
-    if (width > height * aspectRatio) {
-        targetWidth = (height * aspectRatio).toInt()
-        targetHeight = height
-        x = (width - targetWidth) / 2
-        y = 0
-    } else {
-        targetWidth = width
-        targetHeight = (width / aspectRatio).toInt()
-        x = 0
-        y = (height - targetHeight) / 2
-    }
-
-    val matrix = Matrix()
-    matrix.setRectToRect(RectF(0f, 0f, width.toFloat(), height.toFloat()), RectF(0f, 0f, targetWidth.toFloat(), targetHeight.toFloat()), Matrix.ScaleToFit.CENTER)
-
-    return Bitmap.createBitmap(bitmap, x, y, targetWidth, targetHeight, matrix, true)
+    return bitmapImage
 }
 
 fun checkPermissions(context: Context): Boolean {

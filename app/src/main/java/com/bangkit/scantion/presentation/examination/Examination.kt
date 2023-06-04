@@ -2,13 +2,9 @@ package com.bangkit.scantion.presentation.examination
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.ManagedActivityResultLauncher
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
@@ -65,7 +61,7 @@ import com.bangkit.scantion.R
 import com.bangkit.scantion.model.SkinCase
 import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.ui.component.ScantionButton
-import com.bangkit.scantion.util.ComposeFileProvider
+import com.bangkit.scantion.util.ComposeFileProvider.Companion.savedImage
 import com.bangkit.scantion.util.checkPermissions
 import com.bangkit.scantion.util.requestPermission
 import com.bangkit.scantion.util.saveToPdf
@@ -85,6 +81,9 @@ fun Examination(
     navController: NavHostController,
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val activity = (LocalContext.current as? Activity)
+
     val userLog = homeViewModel.userLog.value
     val items = listOf(
         ExaminationItems(
@@ -111,33 +110,7 @@ fun Examination(
     var symptom by rememberSaveable { mutableStateOf("") }
     var photoUri by remember { mutableStateOf<Uri?>(null) }
     var hasImage by remember { mutableStateOf(false) }
-
     var isProcessDone by remember { mutableStateOf(false) }
-    if (pageState.currentPage == items.size - 1) isProcessDone = true
-
-    val context = LocalContext.current
-    var uri = ComposeFileProvider.getImageUri(context)
-
-    val takePictureLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture()
-    ) { success ->
-        if (success) {
-            photoUri = uri
-            hasImage = true
-            uri = ComposeFileProvider.getImageUri(context)
-        }
-    }
-
-    val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia(),
-        onResult = { uriResult ->
-            if (photoUri != uriResult && uriResult != null) {
-                photoUri = uriResult
-                hasImage = true
-            }
-            Log.d("test uri", photoUri.toString())
-        }
-    )
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopSection(items = items, index = pageState.currentPage, navController)
@@ -152,20 +125,20 @@ fun Examination(
         ) { page ->
             if (userLog != null) {
                 ExaminationItem(
+                    context,
                     userLog,
                     page,
                     bodyPart,
                     howLong,
                     symptom,
+                    photoUri,
+                    hasImage,
+                    isProcessDone,
                     onBodyPartChange = { bodyPart = it },
                     onSymptomChange = { symptom = it },
                     onHowLongChange = { howLong = it },
-                    uri,
-                    photoUri,
-                    hasImage,
-                    singlePhotoPickerLauncher,
-                    takePictureLauncher,
-                    isProcessDone
+                    onPhotoUriChange = { photoUri = it },
+                    onHasImageChange = { hasImage = it }
                 )
             }
         }
@@ -173,48 +146,63 @@ fun Examination(
         val isQuestionAnswered =
             bodyPart.isNotEmpty() && howLong.isNotEmpty() && symptom.isNotEmpty()
 
-        BottomSection(
-            navController,
-            bodyPart,
-            howLong,
-            symptom,
-            photoUri,
-            hasImage,
-            isQuestionAnswered,
-            size = items.size,
-            index = pageState.currentPage,
-            onNextClick = {
-                if (pageState.currentPage < items.size - 1) scope.launch {
-                    pageState.animateScrollToPage(pageState.currentPage + 1)
-                }
-            }) {
-            if (pageState.currentPage + 1 > 1) scope.launch {
-                pageState.animateScrollToPage(pageState.currentPage - 1)
-            }
+        if (activity != null) {
+            BottomSection(
+                activity,
+                context,
+                navController,
+                bodyPart,
+                howLong,
+                symptom,
+                photoUri,
+                hasImage,
+                isQuestionAnswered,
+                size = items.size,
+                index = pageState.currentPage,
+                onNextClick = {
+                    if (pageState.currentPage < items.size - 1) scope.launch {
+                        pageState.animateScrollToPage(pageState.currentPage + 1)
+                    }
+                },
+                onPrevClick = {
+                    if (pageState.currentPage + 1 > 1) scope.launch {
+                        pageState.animateScrollToPage(pageState.currentPage - 1)
+                    }
+                },
+                onProcessClick = {
+                    photoUri = savedImage(context, photoUri!!)
+                    isProcessDone = true
+                })
         }
     }
 }
 
 @Composable
 fun ExaminationItem(
+    context: Context,
     userLog: UserLog,
     page: Int,
     bodyPart: String,
     symptom: String,
     howLong: String,
+    photoUri: Uri?,
+    hasImage: Boolean,
+    isProcessDone: Boolean = false,
     onBodyPartChange: (String) -> Unit,
     onSymptomChange: (String) -> Unit,
     onHowLongChange: (String) -> Unit,
-    uri: Uri?,
-    photoUri: Uri?,
-    hasImage: Boolean,
-    singlePhotoPickerLauncher: ManagedActivityResultLauncher<PickVisualMediaRequest, Uri?>,
-    takePictureLauncher: ManagedActivityResultLauncher<Uri, Boolean>,
-    isProcessDone: Boolean = false
+    onPhotoUriChange: (Uri) -> Unit,
+    onHasImageChange: (Boolean) -> Unit
 ) {
     when (page) {
         0 -> {
-            AddPhotoPage(uri, photoUri, hasImage, singlePhotoPickerLauncher, takePictureLauncher)
+            AddPhotoPage(
+                context,
+                photoUri,
+                hasImage,
+                onPhotoUriChange,
+                onHasImageChange
+            )
         }
 
         1 -> {
@@ -249,7 +237,8 @@ fun ExaminationItem(
 @Composable
 fun TopSection(items: List<ExaminationItems>, index: Int, navController: NavHostController) {
     val size = items.size
-    val progress = if (index == size - 1) (size + 1).toFloat() else (index.toFloat() + 1) / (items.size + 1)
+    val progress =
+        if (index == size - 1) (size + 1).toFloat() else (index.toFloat() + 1) / (items.size + 1)
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
         animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
@@ -355,6 +344,8 @@ fun Indicator(i: Int, index: Int, items: ExaminationItems) {
 
 @Composable
 fun BottomSection(
+    activity: Activity,
+    context: Context,
     navController: NavHostController,
     bodyPart: String,
     symptom: String,
@@ -365,13 +356,11 @@ fun BottomSection(
     size: Int,
     index: Int,
     onNextClick: () -> Unit = {},
-    onPrevClick: () -> Unit = {}
+    onPrevClick: () -> Unit = {},
+    onProcessClick: () -> Unit = {}
 ) {
     val isOnResult = index == size - 1
     val isLastInput = index == size - 2
-
-    val ctx = LocalContext.current
-    val activity = (LocalContext.current as? Activity)
 
     Box(
         modifier = Modifier
@@ -406,11 +395,15 @@ fun BottomSection(
                                 if (!isOnResult) {
                                     onPrevClick.invoke()
                                 } else {
-                                    if (checkPermissions(ctx)) {
-                                        Toast.makeText(ctx, "Permissions Granted..", Toast.LENGTH_SHORT).show()
-                                        saveToPdf(ctx, skinCase)
+                                    if (checkPermissions(context)) {
+                                        Toast.makeText(
+                                            context,
+                                            "Permissions Granted..",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        saveToPdf(context, skinCase)
                                     } else {
-                                        requestPermission(activity!!)
+                                        requestPermission(activity)
                                     }
                                 }
                             }
@@ -439,6 +432,7 @@ fun BottomSection(
                         .padding(start = 10.dp),
                     enabled = if (isOnResult) true else enabledNext,
                     onClick = {
+                        if (isLastInput) onProcessClick.invoke()
                         if (isOnResult) navController.popBackStack() else onNextClick.invoke()
                     },
                     text = if (isOnResult) "Selesai" else if (isLastInput) "Proses" else "Selanjutnya",
