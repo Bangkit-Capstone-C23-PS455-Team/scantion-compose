@@ -32,8 +32,8 @@
             </intent-filter>
         </activity>
         <provider
-            android:name=".util.ComposeFileProvider"
-            android:authorities="${applicationId}.fileprovider"
+            android:name=".util.ImageFileProvider"
+            android:authorities="${applicationId}.image_provider"
             android:grantUriPermissions="true"
             android:exported="false">
             <meta-data

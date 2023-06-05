@@ -1,4 +1,4 @@
-package com.bangkit.scantion.util
+package com.bangkit.scantion.model
 
 import com.bangkit.scantion.R
 

@@ -34,7 +34,7 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.pager.*
 import com.bangkit.scantion.navigation.AuthScreen
 import com.bangkit.scantion.ui.component.ScantionButton
-import com.bangkit.scantion.util.WalkthroughItems
+import com.bangkit.scantion.model.WalkthroughItems
 import kotlinx.coroutines.launch
 
 @ExperimentalAnimationApi

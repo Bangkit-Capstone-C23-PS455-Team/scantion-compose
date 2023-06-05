@@ -1,17 +1,12 @@
 package com.bangkit.scantion.util
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
-import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import android.os.Environment
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.bangkit.scantion.R
 import com.bangkit.scantion.model.SkinCase
 import java.io.File
@@ -25,9 +20,21 @@ fun saveToPdf(context: Context, skinCase: SkinCase) {
 
     val pdfDocument = PdfDocument()
 
-    val titlePaint = Paint()
-    val bodyPaint = Paint()
-    val headerPaint = Paint()
+    val titlePaint = Paint().apply {
+        color = Color.BLACK
+        textSize = 36f
+        typeface = Typeface.create(Typeface.DEFAULT_BOLD, Typeface.BOLD)
+    }
+
+    val bodyPaint = Paint().apply {
+        color = Color.DKGRAY
+        textSize = 24f
+    }
+
+    val headerPaint = Paint().apply {
+        color = Color.BLUE
+        textSize = 18f
+    }
 
     val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create()
     val page: PdfDocument.Page = pdfDocument.startPage(pageInfo)
@@ -35,19 +42,6 @@ fun saveToPdf(context: Context, skinCase: SkinCase) {
 
     // Set background color
     canvas.drawColor(Color.WHITE)
-
-    // Set title style
-    titlePaint.color = Color.BLACK
-    titlePaint.textSize = 36f
-    titlePaint.typeface = Typeface.create(Typeface.DEFAULT_BOLD, Typeface.BOLD)
-
-    // Set body style
-    bodyPaint.color = Color.DKGRAY
-    bodyPaint.textSize = 24f
-
-    // Set header style
-    headerPaint.color = Color.BLUE
-    headerPaint.textSize = 18f
 
     // Add header text and logo
     val headerText = "Scantion - A Skin Cancer Detection Application"
@@ -60,7 +54,7 @@ fun saveToPdf(context: Context, skinCase: SkinCase) {
 
     val headerHeight = maxOf(logoHeight, headerTextHeight.toInt()) + 20
 
-    val logoLeft = (pageWidth - (headerTextWidth + 20 + logoWidth)).toFloat() / 2
+    val logoLeft = (pageWidth - (headerTextWidth + 20 + logoWidth)) / 2
     val logoTop = (headerHeight - logoHeight).toFloat() / 2
 
     canvas.drawText(headerText, logoLeft + logoWidth + 20, headerHeight / 2 + headerTextHeight / 2, headerPaint)
@@ -90,14 +84,14 @@ fun saveToPdf(context: Context, skinCase: SkinCase) {
     }
 
     // Load the image from the URI and compress it
+    val side = 320
     val imageUri = Uri.parse(skinCase.photoUri)
-    val imageBitmap = uriToBitmap(imageUri, context)
+    val bitmap = getBitmapFromUri(context, imageUri)
+    val imageBitmap = bitmap?.let { cropToSquare(it, side) }
 
     // Draw the image on the PDF page
     if (imageBitmap != null) {
-        val imageWidth = 400
-        val imageHeight = 400
-        val leftMargin = (pageWidth - imageWidth) / 2
+        val leftMargin = (pageWidth - side) / 2
         val topMargin = yPosition + 20f
 
         canvas.drawBitmap(
@@ -106,8 +100,8 @@ fun saveToPdf(context: Context, skinCase: SkinCase) {
             Rect(
                 leftMargin,
                 topMargin.toInt(),
-                leftMargin + imageWidth,
-                topMargin.toInt() + imageHeight
+                leftMargin + side,
+                topMargin.toInt() + side
             ),
             null
         )
@@ -135,36 +129,4 @@ fun saveToPdf(context: Context, skinCase: SkinCase) {
             .show()
     }
     pdfDocument.close()
-}
-
-private fun uriToBitmap(uri: Uri, context: Context): Bitmap? {
-    val inputStream = context.contentResolver.openInputStream(uri)
-    val bitmap = BitmapFactory.decodeStream(inputStream)
-    val side = 320
-    val bitmapImage = Bitmap.createScaledBitmap(bitmap, side, side, true)
-    inputStream?.close()
-    return bitmapImage
-}
-
-fun checkPermissions(context: Context): Boolean {
-    val writeStoragePermission = ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
-    )
-
-    val readStoragePermission = ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.READ_EXTERNAL_STORAGE
-    )
-    return writeStoragePermission == PackageManager.PERMISSION_GRANTED && readStoragePermission == PackageManager.PERMISSION_GRANTED
-}
-
-fun requestPermission(activity: Activity) {
-    ActivityCompat.requestPermissions(
-        activity,
-        arrayOf(
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        ), 101
-    )
 }

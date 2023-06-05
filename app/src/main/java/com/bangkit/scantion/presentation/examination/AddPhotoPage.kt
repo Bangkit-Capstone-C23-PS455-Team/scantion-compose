@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,7 +28,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.bangkit.scantion.ui.component.ScantionButton
-import com.bangkit.scantion.util.ComposeFileProvider
+import com.bangkit.scantion.util.ImageFileProvider
 
 @Composable
 fun AddPhotoPage(
@@ -35,7 +36,8 @@ fun AddPhotoPage(
     photoUri: Uri?,
     hasImage: Boolean,
     onPhotoUriChange: (Uri) -> Unit,
-    onHasImageChange: (Boolean) -> Unit
+    onHasImageChange: (Boolean) -> Unit,
+    backCallbackEnabled: MutableState<Boolean>
 ) {
     var tempUri: Uri? = null
     val takePictureLauncher = rememberLauncherForActivityResult(
@@ -44,7 +46,11 @@ fun AddPhotoPage(
         if (success && tempUri != null) {
             onPhotoUriChange.invoke(tempUri!!)
             onHasImageChange.invoke(true)
+            backCallbackEnabled.value = true
+        } else if (hasImage) {
+            backCallbackEnabled.value = true
         }
+
     }
 
     val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
@@ -53,6 +59,9 @@ fun AddPhotoPage(
         if (photoUri != uriResult && uriResult != null) {
             onPhotoUriChange.invoke(uriResult)
             onHasImageChange.invoke(true)
+            backCallbackEnabled.value = true
+        } else if (hasImage) {
+            backCallbackEnabled.value = true
         }
     }
 
@@ -93,7 +102,7 @@ fun AddPhotoPage(
                 ScantionButton(
                     modifier = Modifier.fillMaxWidth().padding(end = 5.dp),
                     onClick = {
-                        tempUri = ComposeFileProvider.getImageUri(context)
+                        tempUri = ImageFileProvider.getImageUri(context)
                         takePictureLauncher.launch(tempUri)
                     },
                     text = "Dari Kamera",

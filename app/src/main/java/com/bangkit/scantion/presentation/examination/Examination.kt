@@ -4,7 +4,10 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
@@ -29,6 +32,8 @@ import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -36,6 +41,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,25 +61,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.semantics
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.bangkit.scantion.R
+import com.bangkit.scantion.model.ExaminationItems
 import com.bangkit.scantion.model.SkinCase
 import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.ui.component.ScantionButton
-import com.bangkit.scantion.util.ComposeFileProvider.Companion.savedImage
-import com.bangkit.scantion.util.checkPermissions
-import com.bangkit.scantion.util.requestPermission
+import com.bangkit.scantion.util.ImageFileProvider
+import com.bangkit.scantion.util.ImageFileProvider.Companion.savedImage
+import com.bangkit.scantion.util.checkStoragePermissions
+import com.bangkit.scantion.util.requestStoragePermissions
 import com.bangkit.scantion.util.saveToPdf
 import com.bangkit.scantion.viewmodel.HomeViewModel
-
-
-class ExaminationItems(
-    val pageName: String,
-    val hint: String,
-    val icon: ImageVector
-)
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @OptIn(ExperimentalPagerApi::class)
@@ -108,12 +113,61 @@ fun Examination(
     var bodyPart by rememberSaveable { mutableStateOf("") }
     var howLong by rememberSaveable { mutableStateOf("") }
     var symptom by rememberSaveable { mutableStateOf("") }
-    var photoUri by remember { mutableStateOf<Uri?>(null) }
-    var hasImage by remember { mutableStateOf(false) }
-    var isProcessDone by remember { mutableStateOf(false) }
+    var photoUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var hasImage by rememberSaveable { mutableStateOf(false) }
+    var isProcessDone by rememberSaveable { mutableStateOf(false) }
+
+    val showDialog = rememberSaveable { mutableStateOf(false) }
+    val backCallbackEnabled = rememberSaveable { mutableStateOf(false) }
+
+    val backCallback = remember {
+        object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (!isProcessDone) {
+                    showDialog.value = true
+                } else {
+                    navController.popBackStack()
+                }
+            }
+        }
+    }
+
+    Log.d("Hasimagemgemge", "Examination hasimage: $hasImage")
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val dispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+
+    DisposableEffect(dispatcher, backCallbackEnabled.value, lifecycleOwner) {
+        val lifecycleObserver = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> {
+                    if (backCallbackEnabled.value) {
+                        dispatcher?.addCallback(backCallback)
+                    }
+                }
+                Lifecycle.Event.ON_STOP -> backCallback.remove()
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
+
+        onDispose {
+            backCallback.remove()
+            lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
+        }
+    }
+
+    ExitConfirmationDialog(
+        showDialog = showDialog,
+        onConfirmExit = {
+            ImageFileProvider.deleteImageUnused(context)
+            navController.popBackStack()
+        },
+        onDismiss = { showDialog.value = false }
+    )
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TopSection(items = items, index = pageState.currentPage, navController)
+        TopSection(items = items, index = pageState.currentPage, navController, isProcessDone, hasImage, showDialog)
 
         HorizontalPager(
             count = items.size,
@@ -124,7 +178,7 @@ fun Examination(
             userScrollEnabled = false
         ) { page ->
             if (userLog != null) {
-                ExaminationItem(
+                ExaminationPage(
                     context,
                     userLog,
                     page,
@@ -138,7 +192,8 @@ fun Examination(
                     onSymptomChange = { symptom = it },
                     onHowLongChange = { howLong = it },
                     onPhotoUriChange = { photoUri = it },
-                    onHasImageChange = { hasImage = it }
+                    onHasImageChange = { hasImage = it },
+                    backCallbackEnabled,
                 )
             }
         }
@@ -178,7 +233,7 @@ fun Examination(
 }
 
 @Composable
-fun ExaminationItem(
+fun ExaminationPage(
     context: Context,
     userLog: UserLog,
     page: Int,
@@ -192,7 +247,8 @@ fun ExaminationItem(
     onSymptomChange: (String) -> Unit,
     onHowLongChange: (String) -> Unit,
     onPhotoUriChange: (Uri) -> Unit,
-    onHasImageChange: (Boolean) -> Unit
+    onHasImageChange: (Boolean) -> Unit,
+    backCallbackEnabled: MutableState<Boolean>
 ) {
     when (page) {
         0 -> {
@@ -201,7 +257,8 @@ fun ExaminationItem(
                 photoUri,
                 hasImage,
                 onPhotoUriChange,
-                onHasImageChange
+                onHasImageChange,
+                backCallbackEnabled
             )
         }
 
@@ -235,7 +292,14 @@ fun ExaminationItem(
 }
 
 @Composable
-fun TopSection(items: List<ExaminationItems>, index: Int, navController: NavHostController) {
+fun TopSection(
+    items: List<ExaminationItems>,
+    index: Int,
+    navController: NavHostController,
+    isProcessDone: Boolean,
+    hasImage: Boolean,
+    showDialog: MutableState<Boolean>
+) {
     val size = items.size
     val progress =
         if (index == size - 1) (size + 1).toFloat() else (index.toFloat() + 1) / (items.size + 1)
@@ -253,7 +317,11 @@ fun TopSection(items: List<ExaminationItems>, index: Int, navController: NavHost
         ) {
             IconButton(
                 onClick = {
-                    navController.popBackStack()
+                    if (!hasImage || isProcessDone){
+                        navController.popBackStack()
+                    } else {
+                        showDialog.value = true
+                    }
                 }
             ) {
                 Icon(
@@ -395,7 +463,7 @@ fun BottomSection(
                                 if (!isOnResult) {
                                     onPrevClick.invoke()
                                 } else {
-                                    if (checkPermissions(context)) {
+                                    if (checkStoragePermissions(context)) {
                                         Toast.makeText(
                                             context,
                                             "Permissions Granted..",
@@ -403,7 +471,7 @@ fun BottomSection(
                                         ).show()
                                         saveToPdf(context, skinCase)
                                     } else {
-                                        requestPermission(activity)
+                                        requestStoragePermissions(activity)
                                     }
                                 }
                             }
@@ -442,5 +510,47 @@ fun BottomSection(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun ExitConfirmationDialog(
+    showDialog: MutableState<Boolean>,
+    onConfirmExit: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    if (showDialog.value) {
+        AlertDialog(
+            onDismissRequest = {
+                showDialog.value = false
+                onDismiss()
+            },
+//            title = { Text(text = stringResource(id = R.string.exit_confirmation_title)) },
+//            text = { Text(text = stringResource(id = R.string.exit_confirmation_message)) },
+            title = { Text(text = "Apakah anda yakin keluar dari halaman pemeriksaan?") },
+            text = { Text(text = "Data yang sudah anda masukan akan dihapus") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDialog.value = false
+                        onConfirmExit()
+                    }
+                ) {
+//                    Text(text = stringResource(id = R.string.exit_confirmation_confirm))
+                    Text(text = "Keluar")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        showDialog.value = false
+                        onDismiss()
+                    }
+                ) {
+//                    Text(text = stringResource(id = R.string.exit_confirmation_cancel))
+                    Text(text = "Batal")
+                }
+            }
+        )
     }
 }
