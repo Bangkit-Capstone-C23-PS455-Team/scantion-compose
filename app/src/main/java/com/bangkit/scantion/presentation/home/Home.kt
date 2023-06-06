@@ -133,7 +133,7 @@ fun Home(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.clickable {
-
+                        navController.navigate(HomeScreen.History.route)
                     })
             }
         }

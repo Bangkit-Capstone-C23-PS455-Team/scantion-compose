@@ -17,8 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -33,18 +31,21 @@ fun ScantionButton(
     outlineButton: Boolean = false,
     iconStart: Boolean = false,
     iconEnd: Boolean = false,
-    icon: ImageVector? = null
+    icon: ImageVector? = null,
+    isDeleteButton: Boolean = false
 ) {
     val itemColor =
         if (enabled) {
             if (outlineButton)
                 MaterialTheme.colorScheme.onBackground
+            else if (isDeleteButton)
+                Color.White
             else
                 MaterialTheme.colorScheme.onPrimary
         } else {
             Color.Unspecified
         }
-    val buttonColor = if (outlineButton) ButtonDefaults.buttonColors(MaterialTheme.colorScheme.background) else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+    val buttonColor = if (outlineButton) ButtonDefaults.buttonColors(MaterialTheme.colorScheme.background) else if (isDeleteButton) ButtonDefaults.buttonColors(Color.Red) else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
     val borderButton = if (outlineButton) BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else null
 
     Button(
