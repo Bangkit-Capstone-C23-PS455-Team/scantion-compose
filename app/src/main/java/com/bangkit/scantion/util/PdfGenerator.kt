@@ -13,8 +13,7 @@ import java.io.File
 import java.io.FileOutputStream
 
 @SuppressLint("QueryPermissionsNeeded")
-fun saveToPdf(context: Context, skinCase: SkinCase) {
-    val name = "aji"
+fun saveToPdf(context: Context, skinCase: SkinCase, name: String) {
     val pageWidth = 792
     val pageHeight = 1120
 
@@ -63,12 +62,14 @@ fun saveToPdf(context: Context, skinCase: SkinCase) {
     // Add your content to the PDF page
     val titleText = "Skin Case Report"
     val bodyText = """
+        ${skinCase.id}
+        
         Patient Name: $name
         Body Part: ${skinCase.bodyPart}
         How Long: ${skinCase.howLong}
         Symptom: ${skinCase.symptom}
         Cancer Type: ${skinCase.cancerType}
-        Accuracy: ${skinCase.accuracy}
+        Accuracy: ${(skinCase.accuracy * 100).toInt()}%
         Date Created: ${skinCase.dateCreated}
     """.trimIndent()
 

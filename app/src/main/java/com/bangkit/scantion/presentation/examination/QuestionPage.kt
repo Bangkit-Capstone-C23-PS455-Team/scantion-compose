@@ -33,14 +33,14 @@ fun QuestionPage(
         TextFieldQuestion(
             text = "Sudah berapa lama masalah kulit ini muncul?",
             placeholder = "Berapa lama (misal: 1 tahun 2 bulan)",
-            value = symptom,
-            onChangeValue = onSymptomChange
+            value = howLong,
+            onChangeValue = onHowLongChange
         )
         TextFieldQuestion(
             text = "Apa saja gejala kulit yang anda alami?",
             placeholder = "Gejala (misal: gatal, panas, kering)",
-            value = howLong,
-            onChangeValue = onHowLongChange
+            value = symptom,
+            onChangeValue = onSymptomChange
         )
     }
 }

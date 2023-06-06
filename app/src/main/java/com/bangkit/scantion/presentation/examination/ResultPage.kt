@@ -62,6 +62,11 @@ fun ResultPage(userLog: UserLog, skinCase: SkinCase) {
             TitleTextResult(text = "Detail Pemeriksaan")
             RowSpaceBetweenTwoText(
                 modifier = Modifier.fillMaxWidth(),
+                textFirst = skinCase.id,
+                textSecond = ""
+            )
+            RowSpaceBetweenTwoText(
+                modifier = Modifier.fillMaxWidth(),
                 textFirst = "Nama",
                 textSecond = name
             )

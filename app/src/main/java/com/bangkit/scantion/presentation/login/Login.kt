@@ -37,6 +37,7 @@ import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.navigation.AuthScreen
 import com.bangkit.scantion.ui.component.AuthSpacer
 import com.bangkit.scantion.ui.component.ScantionButton
+import java.util.UUID
 
 @Composable
 fun Login(
@@ -118,7 +119,7 @@ fun ContentSection(
         ScantionButton(
             enabled = emailText.isNotEmpty() && passwordText.isNotEmpty(),
             onClick = {
-                val userLog = UserLog(token = "123456789", name = "Alfachri Ghani", email = emailText, age = -1, province = "", city = "")
+                val userLog = UserLog(token = "123456789", id = "id-${UUID.randomUUID()}", name = "Alfachri Ghani", email = emailText, age = -1, province = "", city = "")
                 loginViewModel.saveLoginState(userLog)
                 navController.navigate(Graph.HOME) {
                     popUpTo(Graph.AUTHENTICATION) { inclusive = true }

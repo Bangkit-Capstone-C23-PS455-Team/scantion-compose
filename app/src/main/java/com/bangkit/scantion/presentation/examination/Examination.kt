@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
@@ -67,29 +66,46 @@ import androidx.compose.ui.semantics.semantics
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bangkit.scantion.R
+import com.bangkit.scantion.ScantionApp
 import com.bangkit.scantion.model.ExaminationItems
 import com.bangkit.scantion.model.SkinCase
 import com.bangkit.scantion.model.UserLog
+import com.bangkit.scantion.navigation.Graph
 import com.bangkit.scantion.ui.component.ScantionButton
 import com.bangkit.scantion.util.ImageFileProvider
 import com.bangkit.scantion.util.ImageFileProvider.Companion.savedImage
 import com.bangkit.scantion.util.checkStoragePermissions
 import com.bangkit.scantion.util.requestStoragePermissions
 import com.bangkit.scantion.util.saveToPdf
+import com.bangkit.scantion.viewmodel.ExaminationViewModel
 import com.bangkit.scantion.viewmodel.HomeViewModel
+import com.bangkit.scantion.viewmodel.ViewModelFactory
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun Examination(
     navController: NavHostController,
-    homeViewModel: HomeViewModel = hiltViewModel()
+    homeViewModel: HomeViewModel = hiltViewModel(),
+    examinationViewModel: ExaminationViewModel = viewModel(
+        factory = ViewModelFactory(ScantionApp.getInstance().getDb().SkinExamsDao())
+    )
 ) {
     val context = LocalContext.current
     val activity = (LocalContext.current as? Activity)
 
-    val userLog = homeViewModel.userLog.value
+    var userLog = UserLog()
+
+    try {
+        userLog = homeViewModel.userLog.value!!
+    } catch (e: Exception){
+        navController.popBackStack()
+        navController.popBackStack()
+        navController.navigate(Graph.AUTHENTICATION)
+    }
+
     val items = listOf(
         ExaminationItems(
             "Foto",
@@ -117,6 +133,21 @@ fun Examination(
     var hasImage by rememberSaveable { mutableStateOf(false) }
     var isProcessDone by rememberSaveable { mutableStateOf(false) }
 
+    var skinCase by rememberSaveable { mutableStateOf<SkinCase?>(null) }
+
+    if (isProcessDone && skinCase == null){
+        skinCase = SkinCase(
+            userId = userLog.id,
+            photoUri = photoUri.toString(),
+            bodyPart = bodyPart,
+            howLong = howLong,
+            symptom = symptom,
+            cancerType = "Melanoma",
+            accuracy = .86f
+        )
+        examinationViewModel.addSkinExam(skinCase!!)
+    }
+
     val showDialog = rememberSaveable { mutableStateOf(false) }
     val backCallbackEnabled = rememberSaveable { mutableStateOf(false) }
 
@@ -131,8 +162,6 @@ fun Examination(
             }
         }
     }
-
-    Log.d("Hasimagemgemge", "Examination hasimage: $hasImage")
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val dispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
@@ -177,25 +206,24 @@ fun Examination(
                 .fillMaxWidth(),
             userScrollEnabled = false
         ) { page ->
-            if (userLog != null) {
-                ExaminationPage(
-                    context,
-                    userLog,
-                    page,
-                    bodyPart,
-                    howLong,
-                    symptom,
-                    photoUri,
-                    hasImage,
-                    isProcessDone,
-                    onBodyPartChange = { bodyPart = it },
-                    onSymptomChange = { symptom = it },
-                    onHowLongChange = { howLong = it },
-                    onPhotoUriChange = { photoUri = it },
-                    onHasImageChange = { hasImage = it },
-                    backCallbackEnabled,
-                )
-            }
+            ExaminationPage(
+                context,
+                userLog,
+                page,
+                bodyPart,
+                howLong,
+                symptom,
+                photoUri,
+                hasImage,
+                isProcessDone,
+                onBodyPartChange = { bodyPart = it },
+                onSymptomChange = { symptom = it },
+                onHowLongChange = { howLong = it },
+                onPhotoUriChange = { photoUri = it },
+                onHasImageChange = { hasImage = it },
+                backCallbackEnabled,
+                skinCase
+            )
         }
 
         val isQuestionAnswered =
@@ -203,17 +231,15 @@ fun Examination(
 
         if (activity != null) {
             BottomSection(
+                userLog,
                 activity,
                 context,
                 navController,
-                bodyPart,
-                howLong,
-                symptom,
-                photoUri,
                 hasImage,
                 isQuestionAnswered,
-                size = items.size,
-                index = pageState.currentPage,
+                skinCase,
+                items.size,
+                pageState.currentPage,
                 onNextClick = {
                     if (pageState.currentPage < items.size - 1) scope.launch {
                         pageState.animateScrollToPage(pageState.currentPage + 1)
@@ -227,7 +253,8 @@ fun Examination(
                 onProcessClick = {
                     photoUri = savedImage(context, photoUri!!)
                     isProcessDone = true
-                })
+                }
+            )
         }
     }
 }
@@ -248,7 +275,8 @@ fun ExaminationPage(
     onHowLongChange: (String) -> Unit,
     onPhotoUriChange: (Uri) -> Unit,
     onHasImageChange: (Boolean) -> Unit,
-    backCallbackEnabled: MutableState<Boolean>
+    backCallbackEnabled: MutableState<Boolean>,
+    skinCase: SkinCase?
 ) {
     when (page) {
         0 -> {
@@ -274,17 +302,10 @@ fun ExaminationPage(
         }
 
         2 -> {
-            if (isProcessDone) {
+            if (isProcessDone && skinCase != null) {
                 ResultPage(
                     userLog,
-                    SkinCase(
-                        photoUri = photoUri.toString(),
-                        bodyPart = bodyPart,
-                        howLong = howLong,
-                        symptom = symptom,
-                        cancerType = "Melanoma",
-                        accuracy = .86f
-                    )
+                    skinCase
                 )
             }
         }
@@ -412,20 +433,18 @@ fun Indicator(i: Int, index: Int, items: ExaminationItems) {
 
 @Composable
 fun BottomSection(
+    userLog: UserLog,
     activity: Activity,
     context: Context,
     navController: NavHostController,
-    bodyPart: String,
-    symptom: String,
-    howLong: String,
-    photoUri: Uri?,
     hasImage: Boolean,
     isQuestionAnswered: Boolean,
+    skinCase: SkinCase?,
     size: Int,
     index: Int,
     onNextClick: () -> Unit = {},
     onPrevClick: () -> Unit = {},
-    onProcessClick: () -> Unit = {}
+    onProcessClick: () -> Unit = {},
 ) {
     val isOnResult = index == size - 1
     val isLastInput = index == size - 2
@@ -451,14 +470,6 @@ fun BottomSection(
                             .fillMaxWidth()
                             .padding(end = 10.dp),
                         onClick = {
-                            val skinCase = SkinCase(
-                                photoUri = photoUri.toString(),
-                                bodyPart = bodyPart,
-                                howLong = howLong,
-                                symptom = symptom,
-                                cancerType = "Melanoma",
-                                accuracy = .86f
-                            )
                             if (index > 0) {
                                 if (!isOnResult) {
                                     onPrevClick.invoke()
@@ -469,7 +480,9 @@ fun BottomSection(
                                             "Permissions Granted..",
                                             Toast.LENGTH_SHORT
                                         ).show()
-                                        saveToPdf(context, skinCase)
+                                        if (skinCase != null) {
+                                            saveToPdf(context, skinCase, userLog.name)
+                                        }
                                     } else {
                                         requestStoragePermissions(activity)
                                     }

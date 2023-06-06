@@ -30,13 +30,48 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.room.Room
+import com.bangkit.scantion.data.database.SkinExamsDao
+import com.bangkit.scantion.data.database.SkinExamsDatabase
 import com.bangkit.scantion.navigation.HomeScreen
 import com.bangkit.scantion.navigation.RootNavGraph
 import com.bangkit.scantion.ui.theme.ScantionTheme
+import com.bangkit.scantion.util.Constants
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class ScantionApp : Application()
+class ScantionApp : Application(){
+    private var db: SkinExamsDatabase? = null
+
+    companion object {
+        private var instance: ScantionApp? = null
+
+        fun getDao(): SkinExamsDao {
+            return instance?.getDb()?.SkinExamsDao()
+                ?: throw IllegalStateException("ScantionApp instance is not initialized")
+        }
+
+        fun getInstance(): ScantionApp {
+            return instance ?: throw IllegalStateException("JourneyApp instance is not initialized")
+        }
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        instance = this
+    }
+
+    fun getDb(): SkinExamsDatabase {
+        return db ?: synchronized(this) {
+            db ?: Room.databaseBuilder(
+                applicationContext,
+                SkinExamsDatabase::class.java,
+                Constants.DATABASE_NAME
+            ).fallbackToDestructiveMigration() // remove in prod
+                .build().also { db = it }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
