@@ -1,13 +1,16 @@
 package com.bangkit.scantion.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 
 @Composable
 fun RootNavGraph(
     navController: NavHostController,
-    startDestination: String
+    startDestination: String,
+    isDarkTheme: MutableState<Boolean>,
+    onThemeChange: (Boolean) -> Unit
 ) {
     NavHost(
         navController = navController,
@@ -15,7 +18,7 @@ fun RootNavGraph(
         startDestination = startDestination
     ) {
         authNavGraph(navController = navController)
-        homeNavGraph(navController = navController)
+        homeNavGraph(navController = navController, isDarkTheme, onThemeChange)
     }
 }
 

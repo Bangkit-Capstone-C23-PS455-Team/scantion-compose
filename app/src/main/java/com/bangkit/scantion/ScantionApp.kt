@@ -1,7 +1,12 @@
 package com.bangkit.scantion
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Application
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,13 +24,26 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -37,7 +55,13 @@ import com.bangkit.scantion.navigation.HomeScreen
 import com.bangkit.scantion.navigation.RootNavGraph
 import com.bangkit.scantion.ui.theme.ScantionTheme
 import com.bangkit.scantion.util.Constants
+import com.bangkit.scantion.viewmodel.SettingViewModel
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @HiltAndroidApp
 class ScantionApp : Application(){
@@ -52,7 +76,7 @@ class ScantionApp : Application(){
         }
 
         fun getInstance(): ScantionApp {
-            return instance ?: throw IllegalStateException("JourneyApp instance is not initialized")
+            return instance ?: throw IllegalStateException("ScantionApp instance is not initialized")
         }
     }
 
@@ -74,22 +98,99 @@ class ScantionApp : Application(){
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition",
+    "UnrememberedMutableState"
+)
 @Composable
-fun ScantionAppCompose(screen: String) {
-    ScantionTheme {
+fun ScantionAppCompose(
+    screen: String,
+    darkTheme: Boolean,
+    initTheme: Boolean,
+    isSystemDarkTheme: Boolean = isSystemInDarkTheme(),
+    settingViewModel: SettingViewModel = hiltViewModel()
+) {
+    val isInitTheme = rememberSaveable{mutableStateOf(initTheme)}
+    val isDarkTheme = rememberSaveable{mutableStateOf(darkTheme)}
+
+    LaunchedEffect(isInitTheme.value) {
+        if (isInitTheme.value) {
+            settingViewModel.setDarkMode(isSystemDarkTheme)
+            isDarkTheme.value = isSystemDarkTheme
+            settingViewModel.setInitTheme(false)
+            isInitTheme.value = false
+        }
+    }
+
+    val onThemeChange: (Boolean) -> Unit = {
+        isDarkTheme.value = it
+        settingViewModel.setDarkMode(it)
+    }
+
+    ScantionTheme (darkTheme = isDarkTheme.value){
         Surface(
             modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
         ) {
             val navController = rememberNavController()
             val backStackEntry = navController.currentBackStackEntryAsState()
+            val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route ?: ""
+            val enableDoubleClick = currentRoute !in listOf(HomeScreen.Home.route, HomeScreen.Profile.route)
+
+            DoubleClickBackClose(enableDoubleClick)
+
             Scaffold(bottomBar = {
                 when (backStackEntry.value?.destination?.route) {
-                    HomeScreen.Home.route, HomeScreen.Profile.route -> NavBar(navController, backStackEntry)
+                    HomeScreen.Home.route, HomeScreen.Profile.route -> {
+                        NavBar(navController, backStackEntry)
+                    }
                 }
             }, content = {
-                RootNavGraph(navController = navController, startDestination = screen)
+                RootNavGraph(navController = navController, startDestination = screen, isDarkTheme, onThemeChange)
             })
+        }
+    }
+}
+
+@Composable
+fun DoubleClickBackClose(enableDoubleClick: Boolean) {
+    val context = LocalContext.current
+    var backPressedCount by remember { mutableIntStateOf(0) }
+    val onResetPress: (Int) -> Unit = {backPressedCount = it}
+
+    val onBackPressedCallback = object : OnBackPressedCallback(enableDoubleClick) {
+        override fun handleOnBackPressed() {
+            backPressedCount++
+            if (backPressedCount >= 2) {
+                (context as? Activity)?.finish()
+            } else {
+                Toast.makeText(context, "Tekan sekali lagi untuk keluar", Toast.LENGTH_SHORT).show()
+            }
+
+            CoroutineScope(Dispatchers.Default).launch {
+                withContext(Dispatchers.Main) {
+                    delay(2000) // 2 seconds delay
+                    onResetPress.invoke(0)
+                }
+            }
+        }
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val backDispatcherOwner = LocalOnBackPressedDispatcherOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val lifecycleObserver = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                backDispatcherOwner?.onBackPressedDispatcher?.addCallback(
+                    onBackPressedCallback
+                )
+            } else if (event == Lifecycle.Event.ON_PAUSE) {
+                onBackPressedCallback.remove()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
         }
     }
 }

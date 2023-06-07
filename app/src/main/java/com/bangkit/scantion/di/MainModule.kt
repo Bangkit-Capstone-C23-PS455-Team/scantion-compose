@@ -1,7 +1,8 @@
 package com.bangkit.scantion.di
 
 import android.content.Context
-import com.bangkit.scantion.data.repository.LoginDataStoreRepository
+import com.bangkit.scantion.data.preference.login.LoginDataStoreRepository
+import com.bangkit.scantion.data.preference.theme.ThemeManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,4 +19,10 @@ object MainModule {
     fun provideDataStoreRepository(
         @ApplicationContext context: Context
     ) = LoginDataStoreRepository(context = context)
+
+    @Provides
+    @Singleton
+    fun provideThemeModeDatastore(
+        @ApplicationContext context: Context
+    ) = ThemeManager(context = context)
 }

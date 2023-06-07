@@ -26,9 +26,11 @@ class MainActivity : ComponentActivity() {
         }
 
         val screen by splashViewModel.startDestination
+        val darkTheme by splashViewModel.darkTheme
+        val initTheme by splashViewModel.initTheme
 
         setContent {
-            ScantionAppCompose(screen)
+            ScantionAppCompose(screen, darkTheme, initTheme)
         }
     }
 }

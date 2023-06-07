@@ -26,6 +26,7 @@ import androidx.navigation.NavHostController
 import com.bangkit.scantion.R
 import com.bangkit.scantion.model.ProfileItems
 import com.bangkit.scantion.navigation.Graph
+import com.bangkit.scantion.navigation.HomeScreen
 import com.bangkit.scantion.viewmodel.LoginViewModel
 
 @Composable
@@ -47,6 +48,7 @@ fun ContentSection(navController: NavHostController, loginViewModel: LoginViewMo
             desc = "Mengatur tema",
             icon = ImageVector.vectorResource(id = R.drawable.ic_settings),
             action = {
+                navController.navigate(HomeScreen.Setting.route)
             }
         ),
         ProfileItems(

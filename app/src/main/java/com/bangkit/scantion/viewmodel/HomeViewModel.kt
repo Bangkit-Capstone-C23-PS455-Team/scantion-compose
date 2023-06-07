@@ -2,7 +2,7 @@ package com.bangkit.scantion.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bangkit.scantion.data.repository.LoginDataStoreRepository
+import com.bangkit.scantion.data.preference.login.LoginDataStoreRepository
 import com.bangkit.scantion.model.UserLog
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
