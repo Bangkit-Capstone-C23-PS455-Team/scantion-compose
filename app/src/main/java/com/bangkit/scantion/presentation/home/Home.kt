@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -29,16 +30,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.bangkit.scantion.navigation.HomeScreen
 import com.bangkit.scantion.R
+import com.bangkit.scantion.ScantionApp
+import com.bangkit.scantion.model.SkinCase
+import com.bangkit.scantion.presentation.history.SkinCaseListItem
+import com.bangkit.scantion.util.Constants.orPlaceHolderList
+import com.bangkit.scantion.viewmodel.ExaminationViewModel
 import com.bangkit.scantion.viewmodel.HomeViewModel
+import com.bangkit.scantion.viewmodel.ViewModelFactory
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun Home(
     navController: NavHostController,
-    homeViewModel: HomeViewModel = hiltViewModel()
+    homeViewModel: HomeViewModel = hiltViewModel(),
+    examinationViewModel: ExaminationViewModel = viewModel(
+        factory = ViewModelFactory(ScantionApp.getInstance().getDb().SkinExamsDao())
+    )
 ) {
     val userLog = homeViewModel.userLog.value
     val name = userLog?.name
@@ -136,6 +147,41 @@ fun Home(
                         navController.navigate(HomeScreen.History.route)
                     })
             }
+            Column(modifier = Modifier.fillMaxSize()) {
+                LastExam(navController, examinationViewModel)
+            }
+        }
+    }
+}
+
+@Composable
+fun LastExam(navController: NavHostController, examinationViewModel: ExaminationViewModel) {
+    val skinExams = examinationViewModel.skinExams.observeAsState()
+    LastSkinExams(navController = navController, skinCases = skinExams.value.orPlaceHolderList(), 2)
+}
+
+@Composable
+fun LastSkinExams(navController: NavHostController, skinCases: List<SkinCase>, total: Int) {
+    if (skinCases[0].id == "empty"){
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 100.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = skinCases[0].userId)
+            Text(text = skinCases[0].bodyPart)
+        }
+    } else if (total >= 1){
+        for (i in 0 until total){
+            SkinCaseListItem(
+                skinCases[i],
+                navController = navController
+            )
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(12.dp)
+            )
         }
     }
 }

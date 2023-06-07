@@ -41,6 +41,7 @@ import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -133,19 +134,26 @@ fun Examination(
     var hasImage by rememberSaveable { mutableStateOf(false) }
     var isProcessDone by rememberSaveable { mutableStateOf(false) }
 
-    var skinCase by rememberSaveable { mutableStateOf<SkinCase?>(null) }
+    val skinCase = remember(bodyPart, howLong, symptom, photoUri, isProcessDone) {
+        if (isProcessDone) {
+            SkinCase(
+                userId = userLog.id,
+                photoUri = photoUri.toString(),
+                bodyPart = bodyPart,
+                howLong = howLong,
+                symptom = symptom,
+                cancerType = "Melanoma",
+                accuracy = .86f
+            )
+        } else {
+            null
+        }
+    }
 
-    if (isProcessDone && skinCase == null){
-        skinCase = SkinCase(
-            userId = userLog.id,
-            photoUri = photoUri.toString(),
-            bodyPart = bodyPart,
-            howLong = howLong,
-            symptom = symptom,
-            cancerType = "Melanoma",
-            accuracy = .86f
-        )
-        examinationViewModel.addSkinExam(skinCase!!)
+    LaunchedEffect(skinCase) {
+        if (skinCase != null) {
+            examinationViewModel.addSkinExam(skinCase)
+        }
     }
 
     val showDialog = rememberSaveable { mutableStateOf(false) }

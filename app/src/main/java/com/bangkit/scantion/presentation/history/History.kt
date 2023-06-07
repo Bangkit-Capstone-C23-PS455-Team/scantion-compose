@@ -33,9 +33,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -114,7 +116,7 @@ fun ListSkinExams(
 @Composable
 fun SkinCaseListItem(skinCase: SkinCase, navController: NavController) {
     return Box(modifier = Modifier
-        .height(120.dp)
+        .height(120.dp).padding(horizontal = 16.dp)
         .clip(RoundedCornerShape(12.dp))) {
         Column(
             modifier = Modifier
@@ -151,17 +153,24 @@ fun SkinCaseListItem(skinCase: SkinCase, navController: NavController) {
                     )
                 }
 
-                Column {
+                Column (modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)){
                     Text(
-                        text = skinCase.id,
+                        text = if (skinCase.cancerType == "Normal") "Aman" else "Terindikasi",
+                        color = if (skinCase.cancerType == "Normal") Color.Green else Color.Red
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = skinCase.bodyPart,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 12.dp),
                         maxLines = 2
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "${skinCase.cancerType} ${(skinCase.accuracy * 100)}%",
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = getDayFormat(skinCase.dateCreated),
-                        modifier = Modifier.padding(horizontal = 12.dp)
                     )
                 }
             }

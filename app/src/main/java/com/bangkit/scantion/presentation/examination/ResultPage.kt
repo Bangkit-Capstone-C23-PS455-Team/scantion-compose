@@ -1,5 +1,6 @@
 package com.bangkit.scantion.presentation.examination
 
+import android.util.Log
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
@@ -54,9 +55,12 @@ fun ResultPage(userLog: UserLog, skinCase: SkinCase) {
     val uriHandler = LocalUriHandler.current
     val hospitalParamSearch = "rumah+sakit"
 
+    Log.d("Result accuracy", "ResultPage: ${skinCase.accuracy}")
+
     Column(
         modifier = Modifier
-            .fillMaxSize().verticalScroll(rememberScrollState())
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
         ColumnPartResult {
             TitleTextResult(text = "Detail Pemeriksaan")
@@ -81,7 +85,9 @@ fun ResultPage(userLog: UserLog, skinCase: SkinCase) {
             TitleTextResult(text = "Hasil")
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
@@ -166,27 +172,19 @@ fun ResultPage(userLog: UserLog, skinCase: SkinCase) {
 
 @Composable
 fun PercentageCircleBox(accuracy: Float, circleSize: Dp, strokeWidth: Dp = ProgressIndicatorDefaults.CircularStrokeWidth) {
-    var accuracyInt by remember { mutableIntStateOf(0) }
     var animationProgress by remember { mutableStateOf(false) }
     val animationDuration = 2500
+
+    Log.d("Result accuracy", "ResultPage: $accuracy")
 
     val currentPercentage by animateFloatAsState(
         targetValue = if(animationProgress) accuracy else 0f,
         animationSpec = tween(durationMillis = animationDuration, easing = FastOutSlowInEasing)
     )
 
-    val accuracyProgress by animateIntAsState(
-        targetValue = accuracyInt,
-        animationSpec = tween(
-            durationMillis = animationDuration,
-            easing = FastOutSlowInEasing
-        )
-    )
-
     LaunchedEffect(key1 = true){
         delay(500)
-        animationProgress=true
-        accuracyInt = (accuracy * 100).toInt()
+        animationProgress = true
     }
 
     Box(
@@ -201,7 +199,7 @@ fun PercentageCircleBox(accuracy: Float, circleSize: Dp, strokeWidth: Dp = Progr
             modifier = Modifier.fillMaxSize()
         )
         Text(
-            text = "${accuracyProgress}%",
+            text = "${(currentPercentage * 100).toInt()}%",
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.Bold,
