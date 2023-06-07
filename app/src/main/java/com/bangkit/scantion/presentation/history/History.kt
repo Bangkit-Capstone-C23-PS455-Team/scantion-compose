@@ -55,7 +55,7 @@ import com.bangkit.scantion.viewmodel.ViewModelFactory
 @Composable
 fun History(
     navController: NavHostController,
-    examinationViewModel: ExaminationViewModel= viewModel(
+    examinationViewModel: ExaminationViewModel = viewModel(
         factory = ViewModelFactory(ScantionApp.getInstance().getDb().SkinExamsDao())
     )
 ) {
@@ -69,10 +69,14 @@ fun History(
 fun ContentSection(
     navController: NavController,
     examinationViewModel: ExaminationViewModel
-){
+) {
     val skinCaseQuery = remember { mutableStateOf("") }
     val skinExams = examinationViewModel.skinExams.observeAsState()
-    ListSkinExams(navController = navController, skinCases = skinExams.value.orPlaceHolderList(), query = skinCaseQuery)
+    ListSkinExams(
+        navController = navController,
+        skinCases = skinExams.value.orPlaceHolderList(),
+        query = skinCaseQuery
+    )
 }
 
 @Composable
@@ -81,10 +85,11 @@ fun ListSkinExams(
     skinCases: List<SkinCase>,
     query: MutableState<String>,
 ) {
-    if (skinCases[0].id == "empty"){
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 100.dp),
+    if (skinCases[0].id == "empty") {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 100.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(text = skinCases[0].userId)
@@ -92,10 +97,10 @@ fun ListSkinExams(
         }
     } else {
         LazyColumn {
-            val queriedSkinExams = if (query.value.isEmpty()){
+            val queriedSkinExams = if (query.value.isEmpty()) {
                 skinCases
             } else {
-                skinCases.filter{it.id.contains(query.value) || it.bodyPart.contains(query.value)}
+                skinCases.filter { it.id.contains(query.value) || it.bodyPart.contains(query.value) }
             }
             itemsIndexed(queriedSkinExams) { _, skinCase ->
                 SkinCaseListItem(
@@ -115,9 +120,12 @@ fun ListSkinExams(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SkinCaseListItem(skinCase: SkinCase, navController: NavController) {
-    return Box(modifier = Modifier
-        .height(120.dp).padding(horizontal = 16.dp)
-        .clip(RoundedCornerShape(12.dp))) {
+    return Box(
+        modifier = Modifier
+            .height(120.dp)
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(12.dp))
+    ) {
         Column(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -136,8 +144,8 @@ fun SkinCaseListItem(skinCase: SkinCase, navController: NavController) {
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
-            ){
-                if (skinCase.photoUri.isNotEmpty()){
+            ) {
+                if (skinCase.photoUri.isNotEmpty()) {
                     Image(
                         painter = rememberAsyncImagePainter(
                             ImageRequest
@@ -153,7 +161,9 @@ fun SkinCaseListItem(skinCase: SkinCase, navController: NavController) {
                     )
                 }
 
-                Column (modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)){
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)) {
                     Text(
                         text = if (skinCase.cancerType == "Normal") "Aman" else "Terindikasi",
                         color = if (skinCase.cancerType == "Normal") Color.Green else Color.Red
@@ -181,28 +191,26 @@ fun SkinCaseListItem(skinCase: SkinCase, navController: NavController) {
 
 @Composable
 fun TopSection(navController: NavController) {
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = {
-                    navController.popBackStack()
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.KeyboardArrowLeft, contentDescription = "close"
-                )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(
+            onClick = {
+                navController.popBackStack()
             }
-            Text(
-                modifier = Modifier.padding(start = 16.dp),
-                text = "Riwayat Pemeriksaan",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.KeyboardArrowLeft, contentDescription = "close"
             )
         }
+        Text(
+            modifier = Modifier.padding(start = 16.dp),
+            text = "Riwayat Pemeriksaan",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
