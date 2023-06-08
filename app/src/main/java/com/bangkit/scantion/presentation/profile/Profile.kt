@@ -1,7 +1,9 @@
 package com.bangkit.scantion.presentation.profile
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +16,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -23,25 +27,70 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.bangkit.scantion.DoubleClickBackClose
 import com.bangkit.scantion.R
 import com.bangkit.scantion.model.ProfileItems
+import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.navigation.Graph
 import com.bangkit.scantion.navigation.HomeScreen
+import com.bangkit.scantion.ui.component.ConfirmationDialog
+import com.bangkit.scantion.viewmodel.HomeViewModel
 import com.bangkit.scantion.viewmodel.LoginViewModel
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun Profile(
-    navController: NavHostController, loginViewModel: LoginViewModel = hiltViewModel()
+    navController: NavHostController, loginViewModel: LoginViewModel = hiltViewModel(), homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
+    var userLog = UserLog()
+    try {
+        userLog = homeViewModel.userLog.value!!
+    } catch (e: Exception){
+        navController.popBackStack()
+        navController.popBackStack()
+        navController.navigate(Graph.AUTHENTICATION)
+    }
+    DoubleClickBackClose()
     Column(modifier = Modifier.fillMaxSize()) {
         TopSection()
-        Spacer(modifier = Modifier.height(100.dp))
+        Spacer(modifier = Modifier.height(20.dp))
+        ProfileInfo(userLog)
+        Spacer(modifier = Modifier.height(40.dp))
         ContentSection(navController, loginViewModel)
     }
 }
 
 @Composable
+fun ProfileInfo(userLog: UserLog) {
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = userLog.name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(text = userLog.email, style = MaterialTheme.typography.titleMedium)
+    }
+}
+
+@Composable
 fun ContentSection(navController: NavHostController, loginViewModel: LoginViewModel) {
+    val showDialog = rememberSaveable { mutableStateOf(false) }
+
+    ConfirmationDialog(
+        showDialog = showDialog,
+        title = "Apakah anda yakin ingin logout?",
+        desc = "Jika anda yakin pilih keluar",
+        confirmText = "Keluar",
+        dismissText = "Batal",
+        redAlert = true,
+        onConfirm = {
+            loginViewModel.logout()
+            navController.popBackStack()
+            navController.navigate(Graph.AUTHENTICATION)
+        }
+    )
+
     val items = listOf(
         ProfileItems(
             menuName = "Pengaturan",
@@ -56,12 +105,11 @@ fun ContentSection(navController: NavHostController, loginViewModel: LoginViewMo
             desc = "Keluar dari akun saat ini",
             icon = ImageVector.vectorResource(id = R.drawable.ic_logout),
             action = {
-                loginViewModel.logout()
-                navController.popBackStack()
-                navController.navigate(Graph.AUTHENTICATION)
+                showDialog.value = true
             }
         )
     )
+
     Column(modifier = Modifier.fillMaxSize()) {
         for (item in items){
             RowItemProfileMenu(item = item)

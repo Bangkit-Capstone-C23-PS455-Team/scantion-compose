@@ -1,9 +1,7 @@
 package com.bangkit.scantion.presentation.examination
 
-import android.util.Log
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -54,8 +51,6 @@ fun ResultPage(userLog: UserLog, skinCase: SkinCase) {
     val name = userLog.name
     val uriHandler = LocalUriHandler.current
     val hospitalParamSearch = "rumah+sakit"
-
-    Log.d("Result accuracy", "ResultPage: ${skinCase.accuracy}")
 
     Column(
         modifier = Modifier
@@ -174,8 +169,6 @@ fun ResultPage(userLog: UserLog, skinCase: SkinCase) {
 fun PercentageCircleBox(accuracy: Float, circleSize: Dp, strokeWidth: Dp = ProgressIndicatorDefaults.CircularStrokeWidth) {
     var animationProgress by remember { mutableStateOf(false) }
     val animationDuration = 2500
-
-    Log.d("Result accuracy", "ResultPage: $accuracy")
 
     val currentPercentage by animateFloatAsState(
         targetValue = if(animationProgress) accuracy else 0f,

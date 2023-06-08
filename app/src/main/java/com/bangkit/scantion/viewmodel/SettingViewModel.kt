@@ -1,6 +1,5 @@
 package com.bangkit.scantion.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bangkit.scantion.data.preference.theme.ThemeManager
@@ -45,7 +44,6 @@ class SettingViewModel @Inject constructor(
     fun setDarkMode(isDarkMode: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             themeManager.saveDarkTheme(isDarkMode)
-            Log.d("settingViewModel", "setDarkMode: $isDarkMode")
         }
     }
 }

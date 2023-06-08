@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.navigation.AuthScreen
 import com.bangkit.scantion.ui.component.AuthSpacer
+import com.bangkit.scantion.ui.component.AuthTextField
 import com.bangkit.scantion.ui.component.ScantionButton
 import java.util.UUID
 
@@ -105,16 +106,20 @@ fun ContentSection(
             fontWeight = FontWeight.Bold
         )
         AuthSpacer()
-        OutlinedTextField(modifier = Modifier.fillMaxWidth(),
+        AuthTextField(
+            modifier = Modifier.fillMaxWidth(),
             value = emailText,
             onValueChange = { emailText = it },
-            label = { Text("Email") })
+            label = { Text("Email") }
+        )
         AuthSpacer()
-        OutlinedTextField(modifier = Modifier.fillMaxWidth(),
+        AuthTextField(
+            modifier = Modifier.fillMaxWidth(),
             value = passwordText,
             onValueChange = { passwordText = it },
-            visualTransformation = PasswordVisualTransformation(),
-            label = { Text("Password") })
+            label = { Text("Password") },
+            isPasswordTf = true
+        )
         AuthSpacer()
         ScantionButton(
             enabled = emailText.isNotEmpty() && passwordText.isNotEmpty(),

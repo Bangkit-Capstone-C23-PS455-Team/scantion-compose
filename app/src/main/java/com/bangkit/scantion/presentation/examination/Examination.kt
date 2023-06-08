@@ -31,8 +31,6 @@ import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -74,6 +72,7 @@ import com.bangkit.scantion.model.ExaminationItems
 import com.bangkit.scantion.model.SkinCase
 import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.navigation.Graph
+import com.bangkit.scantion.ui.component.ConfirmationDialog
 import com.bangkit.scantion.ui.component.ScantionButton
 import com.bangkit.scantion.util.ImageFileProvider
 import com.bangkit.scantion.util.ImageFileProvider.Companion.savedImage
@@ -83,6 +82,7 @@ import com.bangkit.scantion.util.saveToPdf
 import com.bangkit.scantion.viewmodel.ExaminationViewModel
 import com.bangkit.scantion.viewmodel.HomeViewModel
 import com.bangkit.scantion.viewmodel.ViewModelFactory
+import java.util.UUID
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @OptIn(ExperimentalPagerApi::class)
@@ -136,9 +136,11 @@ fun Examination(
 
     val skinCase = remember(bodyPart, howLong, symptom, photoUri, isProcessDone) {
         if (isProcessDone) {
+            val newId = "case-id-${UUID.randomUUID()}"
             SkinCase(
+                id = newId,
                 userId = userLog.id,
-                photoUri = photoUri.toString(),
+                photoUri = savedImage(context, photoUri!!, newId).toString(),
                 bodyPart = bodyPart,
                 howLong = howLong,
                 symptom = symptom,
@@ -194,13 +196,16 @@ fun Examination(
         }
     }
 
-    ExitConfirmationDialog(
+    ConfirmationDialog(
         showDialog = showDialog,
-        onConfirmExit = {
+        title = "Apakah anda yakin keluar dari halaman pemeriksaan?",
+        desc = "Data yang sudah anda masukan akan dihapus",
+        confirmText = "Keluar",
+        dismissText = "Batal",
+        onConfirm = {
             ImageFileProvider.deleteImageUnused(context)
             navController.popBackStack()
-        },
-        onDismiss = { showDialog.value = false }
+        }
     )
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -259,7 +264,6 @@ fun Examination(
                     }
                 },
                 onProcessClick = {
-                    photoUri = savedImage(context, photoUri!!)
                     isProcessDone = true
                 }
             )
@@ -531,47 +535,5 @@ fun BottomSection(
                 )
             }
         }
-    }
-}
-
-@Composable
-fun ExitConfirmationDialog(
-    showDialog: MutableState<Boolean>,
-    onConfirmExit: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    if (showDialog.value) {
-        AlertDialog(
-            onDismissRequest = {
-                showDialog.value = false
-                onDismiss()
-            },
-//            title = { Text(text = stringResource(id = R.string.exit_confirmation_title)) },
-//            text = { Text(text = stringResource(id = R.string.exit_confirmation_message)) },
-            title = { Text(text = "Apakah anda yakin keluar dari halaman pemeriksaan?") },
-            text = { Text(text = "Data yang sudah anda masukan akan dihapus") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showDialog.value = false
-                        onConfirmExit()
-                    }
-                ) {
-//                    Text(text = stringResource(id = R.string.exit_confirmation_confirm))
-                    Text(text = "Keluar")
-                }
-            },
-            dismissButton = {
-                Button(
-                    onClick = {
-                        showDialog.value = false
-                        onDismiss()
-                    }
-                ) {
-//                    Text(text = stringResource(id = R.string.exit_confirmation_cancel))
-                    Text(text = "Batal")
-                }
-            }
-        )
     }
 }

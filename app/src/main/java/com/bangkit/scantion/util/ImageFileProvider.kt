@@ -27,14 +27,14 @@ class ImageFileProvider : FileProvider() {
             return File(imagesDir, "${prefixSelected}_${System.currentTimeMillis()}.$extensionFile")
         }
 
-        fun savedImage(context: Context, imageUri: Uri): Uri? {
+        fun savedImage(context: Context, imageUri: Uri, id: String): Uri? {
             val imagesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
             val bitmap = getBitmapFromUri(context, imageUri)
                 ?:
                 return null
 
             val croppedBitmap = cropToSquare(bitmap, 480)
-            val savedImageFile = File(imagesDir, "${prefixSaved}_${System.currentTimeMillis()}.$extensionFile")
+            val savedImageFile = File(imagesDir, "${prefixSaved}_${id}.$extensionFile")
 
             try {
                 val outputStream = FileOutputStream(savedImageFile)
@@ -52,6 +52,16 @@ class ImageFileProvider : FileProvider() {
             val imagesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
             val selectedImages = imagesDir?.listFiles { file ->
                 file.name.startsWith(prefixSelected)
+            }
+            selectedImages?.forEach { file ->
+                file.delete()
+            }
+        }
+
+        fun deleteImageByUri(context: Context, id: String) {
+            val imagesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+            val selectedImages = imagesDir?.listFiles { file ->
+                file.name.startsWith("${prefixSaved}_${id}")
             }
             selectedImages?.forEach { file ->
                 file.delete()

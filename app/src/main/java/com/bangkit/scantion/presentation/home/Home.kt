@@ -32,10 +32,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.bangkit.scantion.DoubleClickBackClose
 import com.bangkit.scantion.navigation.HomeScreen
 import com.bangkit.scantion.R
 import com.bangkit.scantion.ScantionApp
 import com.bangkit.scantion.model.SkinCase
+import com.bangkit.scantion.model.UserLog
+import com.bangkit.scantion.navigation.Graph
 import com.bangkit.scantion.presentation.history.SkinCaseListItem
 import com.bangkit.scantion.util.Constants.orPlaceHolderList
 import com.bangkit.scantion.viewmodel.ExaminationViewModel
@@ -51,8 +54,17 @@ fun Home(
         factory = ViewModelFactory(ScantionApp.getInstance().getDb().SkinExamsDao())
     )
 ) {
-    val userLog = homeViewModel.userLog.value
-    val name = userLog?.name
+    DoubleClickBackClose()
+    var userLog = UserLog()
+
+    try {
+        userLog = homeViewModel.userLog.value!!
+    } catch (e: Exception){
+        navController.popBackStack()
+        navController.navigate(Graph.AUTHENTICATION)
+    }
+
+    val name = userLog.name
     Box(
         modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
     ) {
@@ -157,7 +169,8 @@ fun Home(
 @Composable
 fun LastExam(navController: NavHostController, examinationViewModel: ExaminationViewModel) {
     val skinExams = examinationViewModel.skinExams.observeAsState()
-    LastSkinExams(navController = navController, skinCases = skinExams.value.orPlaceHolderList(), 2)
+    val total = if (skinExams.value.orPlaceHolderList().size > 2) 2 else skinExams.value.orPlaceHolderList().size
+    LastSkinExams(navController = navController, skinCases = skinExams.value.orPlaceHolderList(), total)
 }
 
 @Composable

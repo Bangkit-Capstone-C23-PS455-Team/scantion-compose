@@ -1,12 +1,7 @@
 package com.bangkit.scantion.presentation.detail
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
-import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -43,10 +39,10 @@ import com.bangkit.scantion.model.SkinCase
 import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.navigation.Graph
 import com.bangkit.scantion.presentation.examination.ResultPage
+import com.bangkit.scantion.ui.component.ConfirmationDialog
 import com.bangkit.scantion.ui.component.ScantionButton
 import com.bangkit.scantion.util.Constants
-import com.bangkit.scantion.util.checkStoragePermissions
-import com.bangkit.scantion.util.requestStoragePermissions
+import com.bangkit.scantion.util.ImageFileProvider
 import com.bangkit.scantion.util.saveToPdf
 import com.bangkit.scantion.viewmodel.ExaminationViewModel
 import com.bangkit.scantion.viewmodel.HomeViewModel
@@ -88,7 +84,9 @@ fun Detail(
     Column(modifier = Modifier.fillMaxSize(),
     verticalArrangement = Arrangement.SpaceBetween) {
         TopSection(navController = navController)
-        Column(modifier = Modifier.fillMaxWidth().fillMaxHeight(.9f)) {
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(.9f)) {
             ResultPage(userLog = userLog, skinCase = skinCase.value)
         }
         BottomSection(navController = navController, skinCase = skinCase.value, userLog = userLog, context = context, examinationViewModel)
@@ -131,6 +129,22 @@ fun BottomSection(
     context: Context,
     examinationViewModel: ExaminationViewModel
 ) {
+    val showDialog = rememberSaveable { mutableStateOf(false) }
+
+    ConfirmationDialog(
+        showDialog = showDialog,
+        title = "Apakah anda yakin ingin menghapus riwayat ini?",
+        desc = "Data yang dihapus tidak dapat dikembalikan",
+        confirmText = "Hapus",
+        dismissText = "Batal",
+        redAlert = true,
+        onConfirm = {
+            ImageFileProvider.deleteImageByUri(context, skinCase.id)
+            examinationViewModel.deleteSkinExam(skinCase)
+            navController.popBackStack()
+        }
+    )
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -166,10 +180,7 @@ fun BottomSection(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 10.dp),
-                    onClick = {
-                        examinationViewModel.deleteSkinExam(skinCase)
-                        navController.popBackStack()
-                    },
+                    onClick = {showDialog.value = true},
                     text = "Hapus",
                     textStyle = MaterialTheme.typography.bodySmall,
                     iconEnd = true,

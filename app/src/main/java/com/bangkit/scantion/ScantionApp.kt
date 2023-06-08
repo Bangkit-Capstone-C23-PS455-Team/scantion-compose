@@ -132,10 +132,6 @@ fun ScantionAppCompose(
         ) {
             val navController = rememberNavController()
             val backStackEntry = navController.currentBackStackEntryAsState()
-            val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route ?: ""
-            val enableDoubleClick = currentRoute !in listOf(HomeScreen.Home.route, HomeScreen.Profile.route)
-
-            DoubleClickBackClose(enableDoubleClick)
 
             Scaffold(bottomBar = {
                 when (backStackEntry.value?.destination?.route) {
@@ -151,7 +147,7 @@ fun ScantionAppCompose(
 }
 
 @Composable
-fun DoubleClickBackClose(enableDoubleClick: Boolean) {
+fun DoubleClickBackClose(enableDoubleClick: Boolean = true) {
     val context = LocalContext.current
     var backPressedCount by remember { mutableIntStateOf(0) }
     val onResetPress: (Int) -> Unit = {backPressedCount = it}
