@@ -33,6 +33,8 @@ import com.bangkit.scantion.navigation.Graph
 import com.bangkit.scantion.viewmodel.LoginViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.navigation.AuthScreen
 import com.bangkit.scantion.ui.component.AuthSpacer
@@ -110,7 +112,10 @@ fun ContentSection(
             modifier = Modifier.fillMaxWidth(),
             value = emailText,
             onValueChange = { emailText = it },
-            label = { Text("Email") }
+            label = { Text("Email") },
+            leadingIcon = {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_mail), contentDescription = "icon tf mail")
+            }
         )
         AuthSpacer()
         AuthTextField(
@@ -118,7 +123,10 @@ fun ContentSection(
             value = passwordText,
             onValueChange = { passwordText = it },
             label = { Text("Password") },
-            isPasswordTf = true
+            isPasswordTf = true,
+            leadingIcon = {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_password), contentDescription = "icon tf password")
+            }
         )
         AuthSpacer()
         ScantionButton(

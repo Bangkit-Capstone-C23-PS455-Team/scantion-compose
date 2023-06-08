@@ -27,6 +27,8 @@ import androidx.navigation.NavHostController
 import com.bangkit.scantion.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import com.bangkit.scantion.data.repository.UserRepository
 import com.bangkit.scantion.model.UserReg
 import com.bangkit.scantion.navigation.AuthScreen
@@ -105,14 +107,20 @@ fun ContentSection(navController: NavHostController) {
             modifier = Modifier.fillMaxWidth(),
             value = nameText,
             onValueChange = { nameText = it },
-            label = { Text("Nama") }
+            label = { Text("Nama") },
+            leadingIcon = {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_name), contentDescription = "icon tf name")
+            }
         )
         AuthSpacer()
         AuthTextField(
             modifier = Modifier.fillMaxWidth(),
             value = emailText,
             onValueChange = { emailText = it },
-            label = { Text("Email") }
+            label = { Text("Email") },
+            leadingIcon = {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_mail), contentDescription = "icon tf mail")
+            }
         )
         AuthSpacer()
         AuthTextField(
@@ -120,7 +128,10 @@ fun ContentSection(navController: NavHostController) {
             value = passwordText,
             onValueChange = { passwordText = it },
             label = { Text("Password") },
-            isPasswordTf = true
+            isPasswordTf = true,
+            leadingIcon = {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_password), contentDescription = "icon tf password")
+            }
         )
         AuthSpacer()
         AuthTextField(
@@ -128,7 +139,10 @@ fun ContentSection(navController: NavHostController) {
             value = confirmPasswordText,
             onValueChange = { confirmPasswordText = it },
             label = { Text("Confirm Password") },
-            isPasswordTf = true
+            isPasswordTf = true,
+            leadingIcon = {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_password), contentDescription = "icon tf password")
+            }
         )
         AuthSpacer()
         ScantionButton(

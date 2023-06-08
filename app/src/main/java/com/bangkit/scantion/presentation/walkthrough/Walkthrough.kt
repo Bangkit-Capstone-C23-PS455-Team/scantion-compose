@@ -25,8 +25,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -48,20 +50,23 @@ fun Walkthrough(
     val pageState = rememberPagerState()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TopSection(pageState.currentPage < items.size - 1, onSkipClick = {
-            if (pageState.currentPage + 1 < items.size) scope.launch {
-                pageState.animateScrollToPage(items.size - 1)
+        Box(modifier = Modifier
+            .fillMaxHeight(0.9f)
+            .fillMaxWidth()) {
+            HorizontalPager(
+                count = items.size,
+                state = pageState,
+                modifier = Modifier
+                    .fillMaxSize()
+            ) { page ->
+                WalkthroughItem(items = items[page], page, navController, items.size)
             }
-        })
 
-        HorizontalPager(
-            count = items.size,
-            state = pageState,
-            modifier = Modifier
-                .fillMaxHeight(0.9f)
-                .fillMaxWidth()
-        ) { page ->
-            WalkthroughItem(items = items[page], page, navController)
+            TopSection(pageState.currentPage < items.size - 1, onSkipClick = {
+                if (pageState.currentPage + 1 < items.size) scope.launch {
+                    pageState.animateScrollToPage(items.size - 1)
+                }
+            })
         }
 
         BottomSection(size = items.size, index = pageState.currentPage, onNextClick = {
@@ -91,7 +96,7 @@ fun TopSection(visible: Boolean, onSkipClick: () -> Unit = {}) {
             TextButton(
                 onClick = onSkipClick, contentPadding = PaddingValues(0.dp)
             ) {
-                Text(text = "Skip")
+                Text(text = "Skip", color = MaterialTheme.colorScheme.onSecondary)
             }
         }
     }
@@ -180,61 +185,76 @@ fun Indicator(isSelected: Boolean) {
 
 @Composable
 fun WalkthroughItem(
-    items: WalkthroughItems, page: Int, navController: NavHostController
+    items: WalkthroughItems, page: Int, navController: NavHostController, size: Int
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 25.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = items.image),
-            contentDescription = "Image1",
+            modifier = Modifier.fillMaxWidth(),
+            imageVector = ImageVector.vectorResource(id = items.background),
+            contentDescription = "background item walkthrough"
         )
-
-        if (page == 3) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 25.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
             Column(
-                modifier = Modifier.height(150.dp), verticalArrangement = Arrangement.Center
+                modifier = Modifier.fillMaxWidth().padding(top = 50.dp),
+                horizontalAlignment = if (page == size - 1) Alignment.CenterHorizontally else if (page % 2 == 0) Alignment.Start else Alignment.End
             ) {
-                ScantionButton(
-                    onClick = {
-                        navController.navigate(AuthScreen.Login.route)
-                    },
-                    text = stringResource(id = items.textFirst),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                ScantionButton(
-                    onClick = { navController.navigate(AuthScreen.Register.route) },
-                    text = stringResource(id = items.textSecond),
-                    modifier = Modifier.fillMaxWidth(),
-                    outlineButton = true
-                )
+                Text(text = "Scantion", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
+                Text(text = "Skin Cancer Detection", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onPrimary)
             }
-        } else {
-            Column(
-                modifier = Modifier.height(150.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = stringResource(id = items.textFirst),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                )
+            Image(
+                modifier = Modifier.padding(top = 40.dp),
+                painter = painterResource(id = items.image),
+                contentDescription = "Image1",
+            )
 
-                Spacer(modifier = Modifier.height(10.dp))
+            if (page == 3) {
+                Column(
+                    modifier = Modifier.height(150.dp), verticalArrangement = Arrangement.Center
+                ) {
+                    ScantionButton(
+                        onClick = {
+                            navController.navigate(AuthScreen.Login.route)
+                        },
+                        text = stringResource(id = items.textFirst),
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                Text(
-                    text = stringResource(id = items.textSecond),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Light,
-                    textAlign = TextAlign.Center,
-                )
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    ScantionButton(
+                        onClick = { navController.navigate(AuthScreen.Register.route) },
+                        text = stringResource(id = items.textSecond),
+                        modifier = Modifier.fillMaxWidth(),
+                        outlineButton = true
+                    )
+                }
+            } else {
+                Column(
+                    modifier = Modifier.height(150.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = stringResource(id = items.textFirst),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = stringResource(id = items.textSecond),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Light,
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
         }
     }
