@@ -4,20 +4,31 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.bangkit.scantion.R
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -58,17 +69,49 @@ fun AuthTextField(
     isPasswordTf: Boolean = false,
     label: @Composable (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null
-){
+    visibility: MutableState<Boolean> = rememberSaveable { mutableStateOf(true) },
+    nextFocusRequester: FocusRequester? = null,
+    isLast: Boolean = false,
+    buttonEnabled: Boolean = false,
+    performAction: () -> Unit = {}
+) {
+    val imeAction = if (isLast) ImeAction.Done else ImeAction.Next
+    val keyboardActions = KeyboardActions(
+        onNext = {
+            nextFocusRequester?.requestFocus()
+        },
+        onDone = {if (buttonEnabled)performAction.invoke()}
+    )
+    val keyboardOptions = if (isPasswordTf) KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = imeAction) else KeyboardOptions(
+        keyboardType = KeyboardType.Text, imeAction = imeAction
+    )
+
     OutlinedTextField(
         modifier = modifier,
         value = value,
         onValueChange = onValueChange,
         label = label,
         maxLines = 1,
-        visualTransformation = if (isPasswordTf) PasswordVisualTransformation() else VisualTransformation.None,
-        keyboardOptions = if (isPasswordTf) KeyboardOptions(keyboardType = KeyboardType.Password) else KeyboardOptions(keyboardType = KeyboardType.Text),
+        visualTransformation = if (isPasswordTf && visibility.value) PasswordVisualTransformation() else VisualTransformation.None,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         leadingIcon = leadingIcon,
-        trailingIcon = trailingIcon,
+        trailingIcon = if (!isPasswordTf) null else {
+            {
+                val imageVisibility = ImageVector.vectorResource(id = R.drawable.ic_visibility)
+                val imageVisibilityOff = ImageVector.vectorResource(id = R.drawable.ic_visibility_off)
+
+                val description = if (visibility.value) "Hide password" else "Show password"
+
+                IconButton(
+                    onClick = { visibility.value = !visibility.value },
+                ) {
+                    Icon(
+                        imageVector = if (visibility.value) imageVisibility else imageVisibilityOff,
+                        contentDescription = description
+                    )
+                }
+            }
+        },
     )
 }

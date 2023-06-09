@@ -133,7 +133,7 @@ fun Home(
                         verticalAlignment = Alignment.Bottom
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.img_card_examination),
+                            imageVector = ImageVector.vectorResource(id = R.drawable.img_card_examination),
                             contentDescription = "image examination illustration"
                         )
                     }

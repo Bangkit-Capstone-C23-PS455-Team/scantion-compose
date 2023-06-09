@@ -1,5 +1,6 @@
 package com.bangkit.scantion.presentation.register
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,7 +27,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.bangkit.scantion.R
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import com.bangkit.scantion.data.repository.UserRepository
@@ -38,7 +43,7 @@ import com.bangkit.scantion.ui.component.ScantionButton
 
 @Composable
 fun Register(
-    navController: NavHostController
+    navController: NavHostController, fromWalkthrough: Boolean = false
 ) {
     Column(
         modifier = Modifier
@@ -47,12 +52,12 @@ fun Register(
     ) {
         TopSection(navController = navController)
         ContentSection(navController = navController)
-        BottomSection(navController = navController)
+        BottomSection(navController = navController, fromWalkthrough)
     }
 }
 
 @Composable
-fun BottomSection(navController: NavHostController) {
+fun BottomSection(navController: NavHostController, fromWalkthrough: Boolean) {
     Row(
         modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
     ) {
@@ -61,7 +66,11 @@ fun BottomSection(navController: NavHostController) {
             color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.clickable {
-                navController.navigate(AuthScreen.Login.route)
+                if (fromWalkthrough) {
+                    navController.navigate(AuthScreen.Login.createRoute(false))
+                } else {
+                    navController.popBackStack()
+                }
             })
     }
 }
@@ -90,7 +99,22 @@ fun ContentSection(navController: NavHostController) {
     var emailText by rememberSaveable { mutableStateOf("") }
     var passwordText by rememberSaveable { mutableStateOf("") }
     var confirmPasswordText by rememberSaveable { mutableStateOf("") }
+    val passwordVisibility = rememberSaveable { mutableStateOf(true) }
+    val confirmPasswordVisibility = rememberSaveable { mutableStateOf(true) }
 
+    val nameFocusRequester = remember { FocusRequester() }
+    val emailFocusRequester = remember { FocusRequester() }
+    val passwordFocusRequester = remember { FocusRequester() }
+    val confirmPasswordFocusRequester = remember { FocusRequester() }
+
+    val buttonEnabled =
+        nameText.isNotEmpty() && emailText.isNotEmpty() && passwordText.isNotEmpty() && confirmPasswordText.isNotEmpty() && passwordText == confirmPasswordText
+
+    val performRegistration: () -> Unit = {
+        val userReg = UserReg(nameText, emailText, passwordText, 0, "sadf", "asfd")
+        val userRepository = UserRepository()
+        performRegistration(navController, userRepository, userReg)
+    }
 
     Column(
         modifier = Modifier
@@ -104,68 +128,98 @@ fun ContentSection(navController: NavHostController) {
         )
         AuthSpacer()
         AuthTextField(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(nameFocusRequester)
+                .onFocusChanged { if (!it.isFocused) nameFocusRequester.freeFocus() },
             value = nameText,
             onValueChange = { nameText = it },
-            label = { Text("Nama") },
+            label = { Text("Name") },
             leadingIcon = {
-                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_name), contentDescription = "icon tf name")
-            }
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_name),
+                    contentDescription = "icon tf name"
+                )
+            },
+            nextFocusRequester = emailFocusRequester
         )
+
         AuthSpacer()
         AuthTextField(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(emailFocusRequester)
+                .onFocusChanged { if (!it.isFocused) emailFocusRequester.freeFocus() },
             value = emailText,
             onValueChange = { emailText = it },
             label = { Text("Email") },
             leadingIcon = {
-                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_mail), contentDescription = "icon tf mail")
-            }
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_mail),
+                    contentDescription = "icon tf mail"
+                )
+            },
+            nextFocusRequester = passwordFocusRequester
         )
+
         AuthSpacer()
+
         AuthTextField(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(passwordFocusRequester)
+                .onFocusChanged { if (!it.isFocused) passwordFocusRequester.freeFocus() },
             value = passwordText,
             onValueChange = { passwordText = it },
             label = { Text("Password") },
             isPasswordTf = true,
             leadingIcon = {
-                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_password), contentDescription = "icon tf password")
-            }
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_password),
+                    contentDescription = "icon tf password"
+                )
+            },
+            visibility = passwordVisibility,
+            nextFocusRequester = confirmPasswordFocusRequester
         )
+
         AuthSpacer()
+
         AuthTextField(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(confirmPasswordFocusRequester),
             value = confirmPasswordText,
             onValueChange = { confirmPasswordText = it },
             label = { Text("Confirm Password") },
             isPasswordTf = true,
             leadingIcon = {
-                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_password), contentDescription = "icon tf password")
-            }
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_password),
+                    contentDescription = "icon tf password"
+                )
+            },
+            visibility = confirmPasswordVisibility,
+            isLast = true,
+            buttonEnabled = buttonEnabled,
+            performAction = performRegistration
         )
         AuthSpacer()
         ScantionButton(
-            enabled = nameText.isNotEmpty() && emailText.isNotEmpty() && passwordText.isNotEmpty() && confirmPasswordText.isNotEmpty() && passwordText == confirmPasswordText,
-            onClick = {
-                val userReg = UserReg(nameText, emailText, passwordText, 0, "sadf", "asfd")
-                val userRepository = UserRepository()
-                performRegistration(navController, userRepository, userReg)
-            },
+            enabled = buttonEnabled,
+            onClick = performRegistration,
             text = stringResource(id = R.string.register_text),
             modifier = Modifier.fillMaxWidth(),
         )
     }
 }
 
-private fun performRegistration(navController: NavHostController, userRepository: UserRepository, userReg: UserReg) {
-    userRepository.registerUser(userReg,
-        onSuccess = {
-            navController.navigate(AuthScreen.Login.route) {
-                popUpTo(AuthScreen.Walkthrough.route)
-            }
-        },
-        onError = {
+private fun performRegistration(
+    navController: NavHostController, userRepository: UserRepository, userReg: UserReg
+) {
+    userRepository.registerUser(userReg, onSuccess = {
+        navController.navigate(AuthScreen.Login.route) {
+            popUpTo(AuthScreen.Walkthrough.route)
         }
-    )
+    }, onError = { Log.d("Register", "performRegistration: gagal")})
 }
