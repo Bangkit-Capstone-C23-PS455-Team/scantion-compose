@@ -9,6 +9,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import com.bangkit.scantion.presentation.detail.Detail
 import com.bangkit.scantion.presentation.examination.Examination
+import com.bangkit.scantion.presentation.explanation.Explanation
 import com.bangkit.scantion.presentation.history.History
 import com.bangkit.scantion.presentation.home.Home
 import com.bangkit.scantion.presentation.menu.Setting
@@ -48,7 +49,16 @@ fun NavGraphBuilder.homeNavGraph(
                 Detail(navController, skinCaseId = skinCaseId)
             }
         }
-
+        composable(
+            route = "explanation/{cancerKey}",
+            arguments = listOf(navArgument("cancerKey") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val arguments = requireNotNull(backStackEntry.arguments)
+            val cancerKey = arguments.getString("cancerKey")
+            if (cancerKey != null){
+                Explanation(navController, cancerKey = cancerKey)
+            }
+        }
     }
 }
 
@@ -60,5 +70,9 @@ sealed class HomeScreen(val route: String) {
     object History : HomeScreen(route = "history_route")
     object Detail: HomeScreen("detail/{storyId}") {
         fun createRoute(skinCaseId: String) = "detail/$skinCaseId"
+    }
+
+    object Explanation: HomeScreen("explanation/{cancerKey}") {
+        fun createRoute(cancerKey: String) = "explanation/$cancerKey"
     }
 }

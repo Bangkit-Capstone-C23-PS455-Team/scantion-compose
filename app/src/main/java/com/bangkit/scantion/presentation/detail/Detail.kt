@@ -87,7 +87,7 @@ fun Detail(
         Column(modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(.9f)) {
-            ResultPage(userLog = userLog, skinCase = skinCase.value)
+            ResultPage(navController, userLog = userLog, skinCase = skinCase.value)
         }
         BottomSection(navController = navController, skinCase = skinCase.value, userLog = userLog, context = context, examinationViewModel)
     }

@@ -176,7 +176,7 @@ fun SkinCaseListItem(skinCase: SkinCase, navController: NavController) {
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "${skinCase.cancerType} ${(skinCase.accuracy * 100)}%",
+                        text = "${skinCase.cancerType} ${(skinCase.accuracy * 100).toInt()}%",
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(

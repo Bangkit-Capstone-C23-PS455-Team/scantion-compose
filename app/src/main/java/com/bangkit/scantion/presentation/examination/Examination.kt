@@ -71,6 +71,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bangkit.scantion.R
 import com.bangkit.scantion.ScantionApp
+import com.bangkit.scantion.model.CancerType
 import com.bangkit.scantion.model.ExaminationItems
 import com.bangkit.scantion.model.SkinCase
 import com.bangkit.scantion.model.UserLog
@@ -86,6 +87,7 @@ import com.bangkit.scantion.viewmodel.ExaminationViewModel
 import com.bangkit.scantion.viewmodel.HomeViewModel
 import com.bangkit.scantion.viewmodel.ViewModelFactory
 import java.util.UUID
+import kotlin.random.Random
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @OptIn(ExperimentalPagerApi::class)
@@ -127,6 +129,10 @@ fun Examination(
             ImageVector.vectorResource(id = R.drawable.ic_result)
         )
     )
+
+    val cancerTypes = CancerType.getData()
+    val listKeyType = CancerType.listKey
+
     val scope = rememberCoroutineScope()
     val pageState = rememberPagerState()
 
@@ -140,6 +146,8 @@ fun Examination(
     val skinCase = remember(bodyPart, howLong, symptom, photoUri, isProcessDone) {
         if (isProcessDone) {
             val newId = "case-id-${UUID.randomUUID()}"
+            val cancerType = cancerTypes.getValue(listKeyType[listKeyType.indices.random()])
+            val accuracy = Random.nextFloat()
             SkinCase(
                 id = newId,
                 userId = userLog.id,
@@ -147,8 +155,8 @@ fun Examination(
                 bodyPart = bodyPart,
                 howLong = howLong,
                 symptom = symptom,
-                cancerType = "Melanoma",
-                accuracy = .86f
+                cancerType = cancerType.displayName,
+                accuracy = accuracy
             )
         } else {
             null
@@ -225,6 +233,7 @@ fun Examination(
             userScrollEnabled = false
         ) { page ->
             ExaminationPage(
+                navController,
                 context,
                 userLog,
                 page,
@@ -278,6 +287,7 @@ fun Examination(
 
 @Composable
 fun ExaminationPage(
+    navController: NavHostController,
     context: Context,
     userLog: UserLog,
     page: Int,
@@ -321,6 +331,7 @@ fun ExaminationPage(
         2 -> {
             if (isProcessDone && skinCase != null) {
                 ResultPage(
+                    navController,
                     userLog,
                     skinCase
                 )

@@ -33,29 +33,37 @@ import com.bangkit.scantion.R
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun TextFieldQuestion(
+    modifier: Modifier,
     text: String,
     placeholder: String,
     value: String,
-    onChangeValue: (String) -> Unit
+    onChangeValue: (String) -> Unit,
+    nextFocusRequester: FocusRequester? = null,
+    isLast: Boolean = false,
+    performAction: () -> Unit = {}
 ) {
-    val keyboardController = LocalSoftwareKeyboardController.current
+    val imeAction = if (isLast) ImeAction.Done else ImeAction.Next
+    val keyboardActions = KeyboardActions(
+        onNext = {
+            nextFocusRequester?.requestFocus()
+        },
+        onDone = {performAction.invoke()}
+    )
+    val keyboardOptions = KeyboardOptions(
+        keyboardType = KeyboardType.Text, imeAction = imeAction
+    )
 
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Text(text = text, style = MaterialTheme.typography.bodyMedium)
         OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .onFocusChanged { focusState ->
-                    if (!focusState.isFocused) {
-                        keyboardController?.hide() // Close the keyboard
-                    }
-                }
-                .imePadding(),
+            modifier = modifier,
             value = value,
             onValueChange = onChangeValue,
             placeholder = { Text(text = placeholder, color = MaterialTheme.colorScheme.secondary) },
+            keyboardActions = keyboardActions,
+            keyboardOptions = keyboardOptions
         )
     }
 }

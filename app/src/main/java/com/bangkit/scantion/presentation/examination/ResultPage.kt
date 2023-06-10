@@ -1,5 +1,6 @@
 package com.bangkit.scantion.presentation.examination
 
+import android.util.Log
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -41,16 +42,28 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.bangkit.scantion.model.CancerType
 import com.bangkit.scantion.model.SkinCase
 import com.bangkit.scantion.model.UserLog
+import com.bangkit.scantion.navigation.HomeScreen
 import kotlinx.coroutines.delay
 
 @Composable
-fun ResultPage(userLog: UserLog, skinCase: SkinCase) {
+fun ResultPage(navController: NavHostController, userLog: UserLog, skinCase: SkinCase) {
     val name = userLog.name
     val uriHandler = LocalUriHandler.current
     val hospitalParamSearch = "rumah+sakit"
+
+    Log.d("result Page", "ResultPage: ${skinCase.cancerType}")
+
+    val cancerTypes = CancerType.getData()
+    var cancerType: CancerType? = null
+
+    if (skinCase.cancerType in CancerType.listKey){
+        cancerType = cancerTypes.getValue(skinCase.cancerType)
+    }
 
     Column(
         modifier = Modifier
@@ -123,9 +136,39 @@ fun ResultPage(userLog: UserLog, skinCase: SkinCase) {
                 }
             }
         }
+        if (cancerType != null){
+            ResultSpacer()
+            ColumnPartResult{
+                TitleTextResult(text = "Penjelasan tentang ${cancerType.displayName}")
+                Column {
+                    Text(text = cancerType.desc, maxLines = 4)
+                    Text(text = "...", maxLines = 1)
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(2.dp)
+                        .alpha(0.3f)
+                        .background(color = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Spacer(modifier = Modifier.fillMaxSize())
+                }
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
+                    Text(
+                        text = "Baca Selengkapnya",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable {
+                            navController.navigate(HomeScreen.Explanation.createRoute(cancerType.displayName))
+                        }
+                    )
+                }
+            }
+        }
         ResultSpacer()
         ColumnPartResult {
-            TitleTextResult(text = "Keterangan")
+            TitleTextResult(text = "Keterangan Pasien")
             RowSpaceBetweenTwoText(
                 modifier = Modifier.fillMaxWidth(),
                 textFirst = "Bagian kulit",
