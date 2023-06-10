@@ -2,7 +2,9 @@ package com.bangkit.scantion.presentation.register
 
 import android.util.Log
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -29,10 +31,11 @@ import com.bangkit.scantion.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.vectorResource
 import com.bangkit.scantion.data.repository.UserRepository
 import com.bangkit.scantion.model.UserReg
@@ -45,19 +48,26 @@ import com.bangkit.scantion.ui.component.ScantionButton
 fun Register(
     navController: NavHostController, fromWalkthrough: Boolean = false
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 25.dp)
-    ) {
-        TopSection(navController = navController)
-        ContentSection(navController = navController)
-        BottomSection(navController = navController, fromWalkthrough)
+    val focusManager = LocalFocusManager.current
+    Box(modifier = Modifier.fillMaxSize().clickable(indication = null, interactionSource = remember { MutableInteractionSource() }, onClick = { focusManager.clearFocus() })){
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 25.dp)
+        ) {
+            TopSection(navController = navController, focusManager)
+            ContentSection(navController = navController, focusManager)
+            BottomSection(navController = navController, fromWalkthrough, focusManager)
+        }
     }
 }
 
 @Composable
-fun BottomSection(navController: NavHostController, fromWalkthrough: Boolean) {
+fun BottomSection(
+    navController: NavHostController,
+    fromWalkthrough: Boolean,
+    focusManager: FocusManager
+) {
     Row(
         modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
     ) {
@@ -66,6 +76,7 @@ fun BottomSection(navController: NavHostController, fromWalkthrough: Boolean) {
             color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.clickable {
+                focusManager.clearFocus()
                 if (fromWalkthrough) {
                     navController.navigate(AuthScreen.Login.createRoute(false))
                 } else {
@@ -76,7 +87,7 @@ fun BottomSection(navController: NavHostController, fromWalkthrough: Boolean) {
 }
 
 @Composable
-fun TopSection(navController: NavHostController) {
+fun TopSection(navController: NavHostController, focusManager: FocusManager) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -84,6 +95,7 @@ fun TopSection(navController: NavHostController) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = {
+            focusManager.clearFocus()
             navController.popBackStack()
         }) {
             Icon(
@@ -94,7 +106,7 @@ fun TopSection(navController: NavHostController) {
 }
 
 @Composable
-fun ContentSection(navController: NavHostController) {
+fun ContentSection(navController: NavHostController, focusManager: FocusManager) {
     var nameText by rememberSaveable { mutableStateOf("") }
     var emailText by rememberSaveable { mutableStateOf("") }
     var passwordText by rememberSaveable { mutableStateOf("") }
@@ -113,6 +125,7 @@ fun ContentSection(navController: NavHostController) {
     val performRegistration: () -> Unit = {
         val userReg = UserReg(nameText, emailText, passwordText, 0, "sadf", "asfd")
         val userRepository = UserRepository()
+        focusManager.clearFocus()
         performRegistration(navController, userRepository, userReg)
     }
 
@@ -130,8 +143,7 @@ fun ContentSection(navController: NavHostController) {
         AuthTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .focusRequester(nameFocusRequester)
-                .onFocusChanged { if (!it.isFocused) nameFocusRequester.freeFocus() },
+                .focusRequester(nameFocusRequester),
             value = nameText,
             onValueChange = { nameText = it },
             label = { Text("Name") },
@@ -148,8 +160,7 @@ fun ContentSection(navController: NavHostController) {
         AuthTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .focusRequester(emailFocusRequester)
-                .onFocusChanged { if (!it.isFocused) emailFocusRequester.freeFocus() },
+                .focusRequester(emailFocusRequester),
             value = emailText,
             onValueChange = { emailText = it },
             label = { Text("Email") },
@@ -167,8 +178,7 @@ fun ContentSection(navController: NavHostController) {
         AuthTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .focusRequester(passwordFocusRequester)
-                .onFocusChanged { if (!it.isFocused) passwordFocusRequester.freeFocus() },
+                .focusRequester(passwordFocusRequester),
             value = passwordText,
             onValueChange = { passwordText = it },
             label = { Text("Password") },

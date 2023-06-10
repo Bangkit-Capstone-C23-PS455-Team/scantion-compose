@@ -1,7 +1,9 @@
 package com.bangkit.scantion.presentation.login
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -11,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,10 +33,11 @@ import com.bangkit.scantion.viewmodel.LoginViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.vectorResource
 import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.navigation.AuthScreen
@@ -50,19 +52,26 @@ fun Login(
     fromWalkthrough: Boolean = false,
     loginViewModel: LoginViewModel = hiltViewModel()
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 25.dp)
-    ) {
-        TopSection(navController = navController)
-        ContentSection(navController = navController, loginViewModel)
-        BottomSection(navController = navController, fromWalkthrough)
+    val focusManager = LocalFocusManager.current
+    Box(modifier = Modifier.fillMaxSize().clickable(indication = null, interactionSource = remember { MutableInteractionSource() }, onClick = { focusManager.clearFocus() })) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 25.dp)
+        ) {
+            TopSection(navController = navController, focusManager)
+            ContentSection(navController = navController, loginViewModel, focusManager)
+            BottomSection(navController = navController, fromWalkthrough, focusManager)
+        }
     }
 }
 
 @Composable
-fun BottomSection(navController: NavHostController, fromWalkthrough: Boolean) {
+fun BottomSection(
+    navController: NavHostController,
+    fromWalkthrough: Boolean,
+    focusManager: FocusManager
+) {
     Row(
         modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
     ) {
@@ -71,6 +80,7 @@ fun BottomSection(navController: NavHostController, fromWalkthrough: Boolean) {
             color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.clickable {
+                focusManager.clearFocus()
                 if (fromWalkthrough) {
                     navController.navigate(AuthScreen.Register.createRoute(false))
                 } else {
@@ -81,7 +91,7 @@ fun BottomSection(navController: NavHostController, fromWalkthrough: Boolean) {
 }
 
 @Composable
-fun TopSection(navController: NavHostController) {
+fun TopSection(navController: NavHostController, focusManager: FocusManager) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -89,6 +99,7 @@ fun TopSection(navController: NavHostController) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = {
+            focusManager.clearFocus()
             navController.popBackStack()
         }) {
             Icon(
@@ -98,10 +109,9 @@ fun TopSection(navController: NavHostController) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContentSection(
-    navController: NavHostController, loginViewModel: LoginViewModel
+    navController: NavHostController, loginViewModel: LoginViewModel, focusManager: FocusManager
 ) {
     var emailText by rememberSaveable { mutableStateOf("") }
     var passwordText by rememberSaveable { mutableStateOf("") }
@@ -122,6 +132,7 @@ fun ContentSection(
             province = "",
             city = ""
         )
+        focusManager.clearFocus()
         loginViewModel.saveLoginState(userLog)
         navController.navigate(Graph.HOME) {
             popUpTo(Graph.AUTHENTICATION) { inclusive = true }
@@ -140,8 +151,9 @@ fun ContentSection(
         )
         AuthSpacer()
         AuthTextField(
-            modifier = Modifier.fillMaxWidth().focusRequester(emailFocusRequester)
-                .onFocusChanged { if (!it.isFocused) emailFocusRequester.freeFocus() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(emailFocusRequester),
             value = emailText,
             onValueChange = { emailText = it },
             label = { Text("Email") },
@@ -151,7 +163,9 @@ fun ContentSection(
             nextFocusRequester = passwordFocusRequester
         )
         AuthTextField(
-            modifier = Modifier.fillMaxWidth().focusRequester(passwordFocusRequester),
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(passwordFocusRequester),
             value = passwordText,
             onValueChange = { passwordText = it },
             label = { Text("Password") },
