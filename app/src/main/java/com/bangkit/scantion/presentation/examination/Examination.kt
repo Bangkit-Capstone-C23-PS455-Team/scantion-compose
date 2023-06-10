@@ -106,7 +106,7 @@ fun Examination(
 
     try {
         userLog = homeViewModel.userLog.value!!
-    } catch (e: Exception){
+    } catch (e: Exception) {
         navController.popBackStack()
         navController.popBackStack()
         navController.navigate(Graph.AUTHENTICATION)
@@ -142,30 +142,32 @@ fun Examination(
     var photoUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     var hasImage by rememberSaveable { mutableStateOf(false) }
     var isProcessDone by rememberSaveable { mutableStateOf(false) }
+    var isGotResult by rememberSaveable { mutableStateOf(false) }
+    var isPostDone by rememberSaveable { mutableStateOf(false) }
 
-    val skinCase = remember(bodyPart, howLong, symptom, photoUri, isProcessDone) {
-        if (isProcessDone) {
-            val newId = "case-id-${UUID.randomUUID()}"
-            val cancerType = cancerTypes.getValue(listKeyType[listKeyType.indices.random()])
-            val accuracy = Random.nextFloat()
-            SkinCase(
-                id = newId,
-                userId = userLog.id,
-                photoUri = savedImage(context, photoUri!!, newId).toString(),
-                bodyPart = bodyPart,
-                howLong = howLong,
-                symptom = symptom,
-                cancerType = cancerType.displayName,
-                accuracy = accuracy
-            )
-        } else {
-            null
-        }
+    var skinCase by rememberSaveable { mutableStateOf<SkinCase?>(null) }
+
+    if (isProcessDone && !isGotResult) {
+        val newId = "case-id-${UUID.randomUUID()}"
+        val cancerType = cancerTypes.getValue(listKeyType[listKeyType.indices.random()])
+        val accuracy = Random.nextFloat()
+        skinCase = SkinCase(
+            id = newId,
+            userId = userLog.id,
+            photoUri = savedImage(context, photoUri!!, newId).toString(),
+            bodyPart = bodyPart,
+            howLong = howLong,
+            symptom = symptom,
+            cancerType = cancerType.displayName,
+            accuracy = accuracy
+        )
+        isGotResult = true
     }
 
     LaunchedEffect(skinCase) {
-        if (skinCase != null) {
-            examinationViewModel.addSkinExam(skinCase)
+        if (skinCase != null && !isPostDone) {
+            examinationViewModel.addSkinExam(skinCase!!)
+            isPostDone = true
         }
     }
 
@@ -195,6 +197,7 @@ fun Examination(
                         dispatcher?.addCallback(backCallback)
                     }
                 }
+
                 Lifecycle.Event.ON_STOP -> backCallback.remove()
                 else -> Unit
             }
@@ -221,8 +224,22 @@ fun Examination(
 
     val focusManager = LocalFocusManager.current
 
-    Column(modifier = Modifier.fillMaxSize().clickable(indication = null, interactionSource = remember { MutableInteractionSource() }, onClick = { focusManager.clearFocus() })) {
-        TopSection(items = items, index = pageState.currentPage, navController, isProcessDone, hasImage, showDialog)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = { focusManager.clearFocus() })
+    ) {
+        TopSection(
+            items = items,
+            index = pageState.currentPage,
+            navController,
+            isProcessDone,
+            hasImage,
+            showDialog
+        )
 
         HorizontalPager(
             count = items.size,
@@ -366,7 +383,7 @@ fun TopSection(
         ) {
             IconButton(
                 onClick = {
-                    if (!hasImage || isProcessDone){
+                    if (!hasImage || isProcessDone) {
                         navController.popBackStack()
                     } else {
                         showDialog.value = true

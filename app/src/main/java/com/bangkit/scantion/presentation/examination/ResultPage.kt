@@ -1,6 +1,5 @@
 package com.bangkit.scantion.presentation.examination
 
-import android.util.Log
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -31,7 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,12 +50,10 @@ import com.bangkit.scantion.navigation.HomeScreen
 import kotlinx.coroutines.delay
 
 @Composable
-fun ResultPage(navController: NavHostController, userLog: UserLog, skinCase: SkinCase) {
+fun ResultPage(navController: NavHostController, userLog: UserLog, skinCase: SkinCase, isFromDetail: Boolean = false) {
     val name = userLog.name
     val uriHandler = LocalUriHandler.current
     val hospitalParamSearch = "rumah+sakit"
-
-    Log.d("result Page", "ResultPage: ${skinCase.cancerType}")
 
     val cancerTypes = CancerType.getData()
     var cancerType: CancerType? = null
@@ -126,7 +123,7 @@ fun ResultPage(navController: NavHostController, userLog: UserLog, skinCase: Ski
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                             ){
-                        PercentageCircleBox(accuracy = skinCase.accuracy, 110.dp)
+                        PercentageCircleBox(accuracy = skinCase.accuracy, 110.dp, isFromDetail = isFromDetail)
                         Text(
                             text = skinCase.cancerType,
                             style = MaterialTheme.typography.titleMedium,
@@ -209,8 +206,8 @@ fun ResultPage(navController: NavHostController, userLog: UserLog, skinCase: Ski
 }
 
 @Composable
-fun PercentageCircleBox(accuracy: Float, circleSize: Dp, strokeWidth: Dp = ProgressIndicatorDefaults.CircularStrokeWidth) {
-    var animationProgress by remember { mutableStateOf(false) }
+fun PercentageCircleBox(accuracy: Float, circleSize: Dp, strokeWidth: Dp = ProgressIndicatorDefaults.CircularStrokeWidth, isFromDetail: Boolean = false) {
+    var animationProgress by rememberSaveable { mutableStateOf(false) }
     val animationDuration = 2500
 
     val currentPercentage by animateFloatAsState(
@@ -223,6 +220,8 @@ fun PercentageCircleBox(accuracy: Float, circleSize: Dp, strokeWidth: Dp = Progr
         animationProgress = true
     }
 
+    val percentage = if (isFromDetail) accuracy else currentPercentage
+
     Box(
         modifier = Modifier
             .size(circleSize)
@@ -230,12 +229,12 @@ fun PercentageCircleBox(accuracy: Float, circleSize: Dp, strokeWidth: Dp = Progr
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
-            progress = currentPercentage,
+            progress = percentage,
             strokeWidth = strokeWidth,
             modifier = Modifier.fillMaxSize()
         )
         Text(
-            text = "${(currentPercentage * 100).toInt()}%",
+            text = "${(percentage * 100).toInt()}%",
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.Bold,
