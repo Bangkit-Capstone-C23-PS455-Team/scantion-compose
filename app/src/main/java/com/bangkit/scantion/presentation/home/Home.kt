@@ -142,7 +142,7 @@ fun Home(
         }
 
         Box(modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp)){
-            CarouselNews(newsList = newsList)
+            CarouselNews(navController = navController, newsList = newsList)
         }
 
         Row(

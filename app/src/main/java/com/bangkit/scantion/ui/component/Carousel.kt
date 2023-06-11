@@ -1,6 +1,7 @@
 package com.bangkit.scantion.ui.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,10 +21,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Scale
 import com.bangkit.scantion.model.News
+import com.bangkit.scantion.navigation.HomeScreen
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -32,6 +35,7 @@ import com.google.accompanist.pager.rememberPagerState
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun CarouselNews(
+    navController: NavController,
     newsList: List<News>
 ) {
     val carouselState: PagerState = rememberPagerState()
@@ -44,7 +48,10 @@ fun CarouselNews(
             contentPadding = PaddingValues(horizontal = 65.dp),
             modifier = Modifier.height(180.dp)
         ) { page ->
-            Card(shape = MaterialTheme.shapes.large) {
+            Card(shape = MaterialTheme.shapes.large,
+            modifier = Modifier.clickable {
+                navController.navigate(HomeScreen.News.createRoute(page))
+            }) {
                 ImageContainer(newsList, page)
             }
         }
