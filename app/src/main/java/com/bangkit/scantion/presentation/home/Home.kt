@@ -24,7 +24,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -36,10 +35,12 @@ import com.bangkit.scantion.DoubleClickBackClose
 import com.bangkit.scantion.navigation.HomeScreen
 import com.bangkit.scantion.R
 import com.bangkit.scantion.ScantionApp
+import com.bangkit.scantion.model.News
 import com.bangkit.scantion.model.SkinCase
 import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.navigation.Graph
 import com.bangkit.scantion.presentation.history.SkinCaseListItem
+import com.bangkit.scantion.ui.component.CarouselNews
 import com.bangkit.scantion.util.Constants.orPlaceHolderList
 import com.bangkit.scantion.viewmodel.ExaminationViewModel
 import com.bangkit.scantion.viewmodel.HomeViewModel
@@ -65,103 +66,107 @@ fun Home(
     }
 
     val name = userLog.name
-    Box(
-        modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+
+    val newsList = News.getData()
+
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
+        Text(
+            modifier = Modifier
+                .padding(vertical = 30.dp)
+                .padding(horizontal = 16.dp),
+            text = "Halo, $name",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+        Card(
+            shape = MaterialTheme.shapes.large, modifier = Modifier.padding(horizontal = 16.dp)
         ) {
-            Text(
-                modifier = Modifier
-                    .padding(vertical = 30.dp)
-                    .padding(horizontal = 16.dp),
-                text = "Halo, $name",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-            Card(
-                shape = MaterialTheme.shapes.large, modifier = Modifier.padding(horizontal = 16.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp)
-                        .padding(start = 16.dp, top = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Column {
-                        Text(
-                            text = "Ingin periksa kulit anda?",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = "Periksa sekarang",
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.width(15.dp))
-                            Button(onClick = {
-                                navController.navigate(HomeScreen.Examination.route)
-                            }) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    modifier = Modifier.width(86.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = ImageVector.vectorResource(id = R.drawable.ic_examination),
-                                        contentDescription = "Icon Add",
-                                        modifier = Modifier
-                                            .width(30.dp)
-                                            .aspectRatio(1f)
-                                    )
-                                    Text(text = "Periksa")
-                                }
-                            }
-                        }
-                    }
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(150.dp),
-                        verticalAlignment = Alignment.Bottom
-                    ) {
-                        Image(
-                            imageVector = ImageVector.vectorResource(id = R.drawable.img_card_examination),
-                            contentDescription = "image examination illustration"
-                        )
-                    }
-                }
-            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 30.dp, horizontal = 16.dp),
+                    .height(150.dp)
+                    .padding(start = 16.dp, top = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
             ) {
-                Text(
-                    text = "Riwayat Pemeriksaan",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(text = "Lihat semua",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable {
-                        navController.navigate(HomeScreen.History.route)
-                    })
+                Column {
+                    Text(
+                        text = "Ingin periksa kulit anda?",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = "Periksa sekarang",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.width(15.dp))
+                        Button(onClick = {
+                            navController.navigate(HomeScreen.Examination.route)
+                        }) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.width(86.dp)
+                            ) {
+                                Icon(
+                                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_examination),
+                                    contentDescription = "Icon Add",
+                                    modifier = Modifier
+                                        .width(30.dp)
+                                        .aspectRatio(1f)
+                                )
+                                Text(text = "Periksa")
+                            }
+                        }
+                    }
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp),
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Image(
+                        imageVector = ImageVector.vectorResource(id = R.drawable.img_card_examination),
+                        contentDescription = "image examination illustration"
+                    )
+                }
             }
-            Column(modifier = Modifier.fillMaxSize()) {
-                LastExam(navController, examinationViewModel)
-            }
+        }
+
+        Box(modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp)){
+            CarouselNews(newsList = newsList)
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, bottom = 20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom
+        ) {
+            Text(
+                text = "Riwayat Pemeriksaan",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(text = "Lihat semua",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable {
+                    navController.navigate(HomeScreen.History.route)
+                })
+        }
+        Column(modifier = Modifier.fillMaxSize()) {
+            LastExam(navController, examinationViewModel)
         }
     }
 }
