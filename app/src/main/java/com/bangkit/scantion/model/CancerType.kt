@@ -9,43 +9,9 @@ class CancerType(
     val note: String
 ) {
     companion object {
-        val listKey = listOf("Normal", "Melanoma", "Benign")
+        val listKey = listOf("Benign", "Melanoma", "Normal")
         fun getData(): Map<String, CancerType> {
             return mapOf(
-                "Normal" to
-                        CancerType(
-                            displayName = "Normal",
-                            fullName = "Normal Skin",
-                            desc = "1. Normal Skin has clear area and there's no scars at all. Normal skin appears smooth, even-toned, and consistent in color. It does not have any unusual growths, discoloration, or irregular borders.\n" +
-                                    "\n" +
-                                    "2. Normal skin has a balanced pigmentation level. It may have variations in skin tone due to factors like sun exposure, ethnicity, or natural variations, but it does not have large or irregularly shaped pigmented areas that are indicative of melanoma.\n" +
-                                    "\n" +
-                                    "3. Moles are common on normal skin and are usually harmless. Normal moles are typically small, round or oval-shaped, and have a consistent color throughout. They may be flat or slightly raised but are usually not larger than the diameter of a pencil eraser.",
-                            symptom = "",
-                            type = "",
-                            note = ""
-                        ),
-                "Melanoma" to
-                        CancerType(
-                            displayName = "Melanoma",
-                            fullName = "Melanoma (Maglinant)",
-                            desc = "Melanoma, also called malignant melanoma, is a cancer that usually starts in the skin. It can start in a mole or in normal-looking skin. A melanoma is a tumor produced by the malignant transformation of melanocytes. ",
-                            symptom = "1. Irregular Moles: A new mole or an existing mole that undergoes changes in size, shape, color, or texture may be a warning sign. Melanomas often have uneven or irregular borders and may be larger than a pencil eraser.\n" +
-                                    "\n" +
-                                    "2. Asymmetry: Melanomas are typically asymmetric, meaning one half of the mole or lesion does not match the other half.\n" +
-                                    "\n" +
-                                    "3. Varied Colors: Melanomas may have multiple colors or shades within the same lesion, including areas of brown, black, blue, red, or white.\n" +
-                                    "\n" +
-                                    "4. Diameter: Melanomas are usually larger in diameter compared to regular moles. They are generally more significant than 6 millimeters (about the size of a pencil eraser), but they can be smaller as well.\n" +
-                                    "\n" +
-                                    "5. Evolving or Changing: Any changes in the size, shape, color, elevation, or other characteristics of a mole or pigmented area should be evaluated. This includes itching, bleeding, crusting, or ulceration of the mole.\n" +
-                                    "\n" +
-                                    "6. Spreading: Melanomas may extend beyond the border of a mole or lesion, growing into the surrounding skin.\n" +
-                                    "\n" +
-                                    "7. Sensation: Some individuals may experience tenderness, pain, or itching in the affected area.",
-                            type = "",
-                            note = "It is important to note that not all melanomas display these symptoms, and some melanomas may lack pigmentation and appear as pink, red, or flesh-colored lesions. It's crucial to regularly examine your skin and consult a dermatologist if you notice any concerning changes or abnormalities in your moles or skin. Early detection and treatment greatly increase the chances of successful outcomes in melanoma cases. So if you are detcted has Melanoma Skin cancer so, SCANTION suggest you to go to the neariest Doctor or Hospital."
-                        ),
                 "Benign" to
                         CancerType(
                             displayName = "Benign",
@@ -74,7 +40,41 @@ class CancerType(
                                     "\n" +
                                     "6. Vascular Lesions (VASC): Vascular lesions include various types of abnormalities in blood vessels, such as hemangiomas, venous malformations, or vascular tumors. These lesions are not melanoma but rather involve the blood vessels within the skin.",
                             note = "It's important to note that although benign tumors are generally not life-threatening, their growth or presence in certain locations can still cause health issues. Some benign tumors, depending on their size or location, can exert pressure on nearby structures, leading to symptoms or complications. In such cases, medical intervention may be required to address the tumor. However, regular monitoring and follow-up may be recommended to ensure the tumor remains benign and does not undergo any significant changes over time.And SCANTION recommended all the user who has that Benign Symptoms to go the nearest Hospital or Doctor to get the spesific and detail information about it."
-                        )
+                        ),
+                "Melanoma" to
+                        CancerType(
+                            displayName = "Melanoma",
+                            fullName = "Melanoma (Maglinant)",
+                            desc = "Melanoma, also called malignant melanoma, is a cancer that usually starts in the skin. It can start in a mole or in normal-looking skin. A melanoma is a tumor produced by the malignant transformation of melanocytes. ",
+                            symptom = "1. Irregular Moles: A new mole or an existing mole that undergoes changes in size, shape, color, or texture may be a warning sign. Melanomas often have uneven or irregular borders and may be larger than a pencil eraser.\n" +
+                                    "\n" +
+                                    "2. Asymmetry: Melanomas are typically asymmetric, meaning one half of the mole or lesion does not match the other half.\n" +
+                                    "\n" +
+                                    "3. Varied Colors: Melanomas may have multiple colors or shades within the same lesion, including areas of brown, black, blue, red, or white.\n" +
+                                    "\n" +
+                                    "4. Diameter: Melanomas are usually larger in diameter compared to regular moles. They are generally more significant than 6 millimeters (about the size of a pencil eraser), but they can be smaller as well.\n" +
+                                    "\n" +
+                                    "5. Evolving or Changing: Any changes in the size, shape, color, elevation, or other characteristics of a mole or pigmented area should be evaluated. This includes itching, bleeding, crusting, or ulceration of the mole.\n" +
+                                    "\n" +
+                                    "6. Spreading: Melanomas may extend beyond the border of a mole or lesion, growing into the surrounding skin.\n" +
+                                    "\n" +
+                                    "7. Sensation: Some individuals may experience tenderness, pain, or itching in the affected area.",
+                            type = "",
+                            note = "It is important to note that not all melanomas display these symptoms, and some melanomas may lack pigmentation and appear as pink, red, or flesh-colored lesions. It's crucial to regularly examine your skin and consult a dermatologist if you notice any concerning changes or abnormalities in your moles or skin. Early detection and treatment greatly increase the chances of successful outcomes in melanoma cases. So if you are detcted has Melanoma Skin cancer so, SCANTION suggest you to go to the neariest Doctor or Hospital."
+                        ),
+                "Normal" to
+                        CancerType(
+                            displayName = "Normal",
+                            fullName = "Normal Skin",
+                            desc = "1. Normal Skin has clear area and there's no scars at all. Normal skin appears smooth, even-toned, and consistent in color. It does not have any unusual growths, discoloration, or irregular borders.\n" +
+                                    "\n" +
+                                    "2. Normal skin has a balanced pigmentation level. It may have variations in skin tone due to factors like sun exposure, ethnicity, or natural variations, but it does not have large or irregularly shaped pigmented areas that are indicative of melanoma.\n" +
+                                    "\n" +
+                                    "3. Moles are common on normal skin and are usually harmless. Normal moles are typically small, round or oval-shaped, and have a consistent color throughout. They may be flat or slightly raised but are usually not larger than the diameter of a pencil eraser.",
+                            symptom = "",
+                            type = "",
+                            note = ""
+                        ),
             )
         }
     }

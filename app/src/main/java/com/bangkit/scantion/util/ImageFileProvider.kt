@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Environment
 import androidx.core.content.FileProvider
+import com.bangkit.scantion.model.SavedImage
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -27,13 +28,15 @@ class ImageFileProvider : FileProvider() {
             return File(imagesDir, "${prefixSelected}_${System.currentTimeMillis()}.$extensionFile")
         }
 
-        fun savedImage(context: Context, imageUri: Uri, id: String): Uri? {
+        fun savedImage(context: Context, imageUri: Uri, id: String): SavedImage? {
             val imagesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
             val bitmap = getBitmapFromUri(context, imageUri)
-                ?:
-                return null
+                ?: return null
 
             val croppedBitmap = cropToSquare(bitmap, 480)
+
+            val predictionResult = PredictImage(context, imageUri).predictImage()
+
             val savedImageFile = File(imagesDir, "${prefixSaved}_${id}.$extensionFile")
 
             try {
@@ -45,7 +48,16 @@ class ImageFileProvider : FileProvider() {
                 return null
             }
             deleteImageUnused(context)
-            return getUriForFile(context, "${context.packageName}.$authorityProvider", savedImageFile)
+
+            return SavedImage(
+                getUriForFile(
+                    context,
+                    "${context.packageName}.$authorityProvider",
+                    savedImageFile
+                ),
+                predictionResult.first,
+                predictionResult.second
+            )
         }
 
         fun deleteImageUnused(context: Context) {

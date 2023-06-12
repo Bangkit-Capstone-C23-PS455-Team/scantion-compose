@@ -130,9 +130,6 @@ fun Examination(
         )
     )
 
-    val cancerTypes = CancerType.getData()
-    val listKeyType = CancerType.listKey
-
     val scope = rememberCoroutineScope()
     val pageState = rememberPagerState()
 
@@ -149,18 +146,19 @@ fun Examination(
 
     if (isProcessDone && !isGotResult) {
         val newId = "case-id-${UUID.randomUUID()}"
-        val cancerType = cancerTypes.getValue(listKeyType[listKeyType.indices.random()])
-        val accuracy = Random.nextFloat()
-        skinCase = SkinCase(
-            id = newId,
-            userId = userLog.id,
-            photoUri = savedImage(context, photoUri!!, newId).toString(),
-            bodyPart = bodyPart,
-            howLong = howLong,
-            symptom = symptom,
-            cancerType = cancerType.displayName,
-            accuracy = accuracy
-        )
+        val savedImage = savedImage(context, photoUri!!, newId)
+        if (savedImage != null) {
+            skinCase = SkinCase(
+                id = newId,
+                userId = userLog.id,
+                photoUri = savedImage.uri.toString(),
+                bodyPart = bodyPart,
+                howLong = howLong,
+                symptom = symptom,
+                cancerType = savedImage.label,
+                accuracy = savedImage.confidence
+            )
+        }
         isGotResult = true
     }
 
