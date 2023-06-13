@@ -1,5 +1,7 @@
 package com.bangkit.scantion.presentation.login
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -37,14 +39,16 @@ import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.vectorResource
-import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.navigation.AuthScreen
+import com.bangkit.scantion.navigation.HomeScreen
 import com.bangkit.scantion.ui.component.AuthSpacer
 import com.bangkit.scantion.ui.component.AuthTextField
 import com.bangkit.scantion.ui.component.ScantionButton
-import java.util.UUID
+import com.bangkit.scantion.util.Resource
 
 @Composable
 fun Login(
@@ -53,7 +57,13 @@ fun Login(
     loginViewModel: LoginViewModel = hiltViewModel()
 ) {
     val focusManager = LocalFocusManager.current
-    Box(modifier = Modifier.fillMaxSize().clickable(indication = null, interactionSource = remember { MutableInteractionSource() }, onClick = { focusManager.clearFocus() })) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable(indication = null,
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = { focusManager.clearFocus() })
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -68,9 +78,7 @@ fun Login(
 
 @Composable
 fun BottomSection(
-    navController: NavHostController,
-    fromWalkthrough: Boolean,
-    focusManager: FocusManager
+    navController: NavHostController, fromWalkthrough: Boolean, focusManager: FocusManager
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
@@ -122,20 +130,35 @@ fun ContentSection(
 
     val buttonEnabled = emailText.isNotEmpty() && passwordText.isNotEmpty()
 
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val context = LocalContext.current
+
     val performLogin: () -> Unit = {
-        val userLog = UserLog(
-            token = "123456789",
-            id = "id-${UUID.randomUUID()}",
-            name = "Alfachri Ghani",
-            email = emailText,
-            age = -1,
-            province = "",
-            city = ""
-        )
-        focusManager.clearFocus()
-        loginViewModel.saveLoginState(userLog)
-        navController.navigate(Graph.HOME) {
-            popUpTo(Graph.AUTHENTICATION) { inclusive = true }
+        loginViewModel.loginUser(emailText, passwordText).observe(lifecycleOwner) {
+            if (it != null) {
+                when (it) {
+                    is Resource.Loading -> {
+                    }
+
+                    is Resource.Success -> {
+                        val token = it.data.accessToken
+                        if (!token.isNullOrEmpty()) {
+                            focusManager.clearFocus()
+                            Log.d("token", token)
+                            loginViewModel.saveToken(token.removePrefix("0|"))
+                            navController.navigate(Graph.HOME) {
+                                popUpTo(HomeScreen.Home.route) { inclusive = true }
+                            }
+                        } else {
+                            Toast.makeText(context, "Login Failed", Toast.LENGTH_LONG).show()
+                        }
+                    }
+
+                    is Resource.Error -> {
+                        Toast.makeText(context, "Error ${it.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
         }
     }
 
@@ -157,8 +180,12 @@ fun ContentSection(
             value = emailText,
             onValueChange = { emailText = it },
             label = { Text("Email") },
+            isEmailTf = true,
             leadingIcon = {
-                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_mail), contentDescription = "icon tf mail")
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_mail),
+                    contentDescription = "icon tf mail"
+                )
             },
             nextFocusRequester = passwordFocusRequester
         )
@@ -171,7 +198,10 @@ fun ContentSection(
             label = { Text("Password") },
             isPasswordTf = true,
             leadingIcon = {
-                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_password), contentDescription = "icon tf password")
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_password),
+                    contentDescription = "icon tf password"
+                )
             },
             visibility = passwordVisibility,
             isLast = true,

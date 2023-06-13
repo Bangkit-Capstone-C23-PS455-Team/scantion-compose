@@ -10,8 +10,6 @@ import com.bangkit.scantion.data.preference.theme.ThemeManager
 import com.bangkit.scantion.navigation.Graph
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,8 +32,8 @@ class SplashViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            repository.readLoginState().collect { userLog ->
-                if (userLog != null) {
+            repository.getToken().collect { token ->
+                if (!token.isNullOrEmpty()) {
                     _startDestination.value = Graph.HOME
                 } else {
                     _startDestination.value = Graph.AUTHENTICATION

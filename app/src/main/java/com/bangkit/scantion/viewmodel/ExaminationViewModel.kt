@@ -2,14 +2,16 @@ package com.bangkit.scantion.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.bangkit.scantion.data.database.SkinExamsDao
 import com.bangkit.scantion.model.SkinCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class ExaminationViewModel(
+@HiltViewModel
+class ExaminationViewModel @Inject constructor(
     private val skinExamsDao: SkinExamsDao
 ) : ViewModel() {
 
@@ -29,15 +31,5 @@ class ExaminationViewModel(
 
     suspend fun getSkinExamById(skinCaseId: String): SkinCase? {
         return skinExamsDao.getSkinExamById(skinCaseId)
-    }
-}
-
-class ViewModelFactory(
-    private val skinExamsDao: SkinExamsDao,
-) : ViewModelProvider.NewInstanceFactory() {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return  ExaminationViewModel(
-            skinExamsDao = skinExamsDao,
-        ) as T
     }
 }

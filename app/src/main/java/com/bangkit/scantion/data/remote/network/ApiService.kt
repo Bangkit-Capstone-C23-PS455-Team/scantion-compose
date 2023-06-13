@@ -1,12 +1,31 @@
 package com.bangkit.scantion.data.remote.network
 
+import com.bangkit.scantion.data.remote.response.LoginResponse
 import com.bangkit.scantion.data.remote.response.RegisterResponse
-import com.bangkit.scantion.model.UserReg
-import retrofit2.Call
+import com.bangkit.scantion.data.remote.response.UserResponse
 import retrofit2.http.*
 
 interface ApiService {
 
-    @POST("addUsers")
-    fun register(@Body userReg: UserReg?): Call<RegisterResponse>
+    @FormUrlEncoded
+    @POST("register")
+    suspend fun registerUser(
+        @Field("name") name: String,
+        @Field("email") email: String,
+        @Field("password") password: String,
+        @Field("age") age: Int,
+        @Field("city") city: String,
+        @Field("province") province: String
+    ): RegisterResponse
+
+    @FormUrlEncoded
+    @POST("login")
+    suspend fun loginUser(
+        @Field("email") email: String,
+        @Field("password") password: String,
+    ): LoginResponse
+
+    @GET("user")
+    suspend fun getUser(
+    ): UserResponse
 }

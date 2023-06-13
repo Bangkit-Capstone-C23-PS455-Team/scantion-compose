@@ -1,6 +1,7 @@
 package com.bangkit.scantion.presentation.home
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,17 +25,16 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.bangkit.scantion.DoubleClickBackClose
 import com.bangkit.scantion.navigation.HomeScreen
 import com.bangkit.scantion.R
-import com.bangkit.scantion.ScantionApp
 import com.bangkit.scantion.model.News
 import com.bangkit.scantion.model.SkinCase
 import com.bangkit.scantion.model.UserLog
@@ -42,30 +42,57 @@ import com.bangkit.scantion.navigation.Graph
 import com.bangkit.scantion.presentation.history.SkinCaseListItem
 import com.bangkit.scantion.ui.component.CarouselNews
 import com.bangkit.scantion.util.Constants.orPlaceHolderList
+import com.bangkit.scantion.util.Resource
 import com.bangkit.scantion.viewmodel.ExaminationViewModel
 import com.bangkit.scantion.viewmodel.HomeViewModel
-import com.bangkit.scantion.viewmodel.ViewModelFactory
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun Home(
     navController: NavHostController,
     homeViewModel: HomeViewModel = hiltViewModel(),
-    examinationViewModel: ExaminationViewModel = viewModel(
-        factory = ViewModelFactory(ScantionApp.getInstance().getDb().SkinExamsDao())
-    )
+    examinationViewModel: ExaminationViewModel = hiltViewModel()
 ) {
     DoubleClickBackClose()
     var userLog = UserLog()
 
-    try {
-        userLog = homeViewModel.userLog.value!!
-    } catch (e: Exception){
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val userNotFoundUnit = {
         navController.popBackStack()
         navController.navigate(Graph.AUTHENTICATION)
     }
 
-    val name = userLog.name
+    try {
+        userLog = homeViewModel.userLog.value!!
+    } catch (e: Exception){
+        homeViewModel.getUser().observe(lifecycleOwner) { result ->
+            if (result != null) {
+                when (result) {
+                    is Resource.Loading -> {}
+                    is Resource.Success -> {
+                        userLog = UserLog(
+                            result.data.id,
+                            result.data.name,
+                            result.data.email,
+                            result.data.age,
+                            result.data.province,
+                            result.data.city
+                        )
+                        homeViewModel.saveUser(userLog)
+                        Log.d("user", "Get User success")
+                    }
+
+                    is Resource.Error -> {
+                        Log.d("user", "Get User Failed")
+                        userNotFoundUnit.invoke()
+                    }
+                }
+            } else {
+                Log.d("user", "Get User Failed")
+                userNotFoundUnit.invoke()
+            }
+        }
+    }
 
     val newsList = News.getData()
 
@@ -76,7 +103,7 @@ fun Home(
             modifier = Modifier
                 .padding(vertical = 30.dp)
                 .padding(horizontal = 16.dp),
-            text = "Halo, $name",
+            text = "Halo, ${userLog.name}",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
         )
@@ -141,7 +168,9 @@ fun Home(
             }
         }
 
-        Box(modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp)){
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 20.dp)){
             CarouselNews(navController = navController, newsList = newsList)
         }
 

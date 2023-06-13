@@ -38,25 +38,21 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.bangkit.scantion.ScantionApp
 import com.bangkit.scantion.model.SkinCase
 import com.bangkit.scantion.navigation.HomeScreen
 import com.bangkit.scantion.util.Constants.orPlaceHolderList
 import com.bangkit.scantion.util.getDayFormat
 import com.bangkit.scantion.viewmodel.ExaminationViewModel
-import com.bangkit.scantion.viewmodel.ViewModelFactory
 
 @Composable
 fun History(
     navController: NavHostController,
-    examinationViewModel: ExaminationViewModel = viewModel(
-        factory = ViewModelFactory(ScantionApp.getInstance().getDb().SkinExamsDao())
-    )
+    examinationViewModel: ExaminationViewModel = hiltViewModel()
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         TopSection(navController)

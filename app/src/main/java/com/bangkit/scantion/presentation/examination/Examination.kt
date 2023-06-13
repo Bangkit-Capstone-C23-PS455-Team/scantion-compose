@@ -68,10 +68,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bangkit.scantion.R
-import com.bangkit.scantion.ScantionApp
-import com.bangkit.scantion.model.CancerType
 import com.bangkit.scantion.model.ExaminationItems
 import com.bangkit.scantion.model.SkinCase
 import com.bangkit.scantion.model.UserLog
@@ -85,19 +82,14 @@ import com.bangkit.scantion.util.requestStoragePermissions
 import com.bangkit.scantion.util.saveToPdf
 import com.bangkit.scantion.viewmodel.ExaminationViewModel
 import com.bangkit.scantion.viewmodel.HomeViewModel
-import com.bangkit.scantion.viewmodel.ViewModelFactory
 import java.util.UUID
-import kotlin.random.Random
-
 @SuppressLint("StateFlowValueCalledInComposition")
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun Examination(
     navController: NavHostController,
     homeViewModel: HomeViewModel = hiltViewModel(),
-    examinationViewModel: ExaminationViewModel = viewModel(
-        factory = ViewModelFactory(ScantionApp.getInstance().getDb().SkinExamsDao())
-    )
+    examinationViewModel: ExaminationViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val activity = (LocalContext.current as? Activity)

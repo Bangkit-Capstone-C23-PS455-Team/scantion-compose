@@ -31,10 +31,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import com.bangkit.scantion.ScantionApp
 import com.bangkit.scantion.model.SkinCase
 import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.navigation.Graph
@@ -46,7 +44,6 @@ import com.bangkit.scantion.util.ImageFileProvider
 import com.bangkit.scantion.util.saveToPdf
 import com.bangkit.scantion.viewmodel.ExaminationViewModel
 import com.bangkit.scantion.viewmodel.HomeViewModel
-import com.bangkit.scantion.viewmodel.ViewModelFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -56,9 +53,7 @@ fun Detail(
     navController: NavHostController,
     skinCaseId: String,
     homeViewModel: HomeViewModel = hiltViewModel(),
-    examinationViewModel: ExaminationViewModel= viewModel(
-        factory = ViewModelFactory(ScantionApp.getInstance().getDb().SkinExamsDao())
-    )
+    examinationViewModel: ExaminationViewModel = hiltViewModel()
 ){
     var userLog = UserLog()
     try {

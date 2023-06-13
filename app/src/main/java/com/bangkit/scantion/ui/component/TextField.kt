@@ -47,7 +47,7 @@ fun TextFieldQuestion(
         onNext = {
             nextFocusRequester?.requestFocus()
         },
-        onDone = {performAction.invoke()}
+        onDone = { performAction.invoke() }
     )
     val keyboardOptions = KeyboardOptions(
         keyboardType = KeyboardType.Text, imeAction = imeAction
@@ -75,6 +75,7 @@ fun AuthTextField(
     value: String,
     onValueChange: (String) -> Unit,
     isPasswordTf: Boolean = false,
+    isEmailTf: Boolean = false,
     label: @Composable (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     visibility: MutableState<Boolean> = rememberSaveable { mutableStateOf(true) },
@@ -88,10 +89,11 @@ fun AuthTextField(
         onNext = {
             nextFocusRequester?.requestFocus()
         },
-        onDone = {if (buttonEnabled)performAction.invoke()}
+        onDone = { if (buttonEnabled) performAction.invoke() }
     )
-    val keyboardOptions = if (isPasswordTf) KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = imeAction) else KeyboardOptions(
-        keyboardType = KeyboardType.Text, imeAction = imeAction
+    val keyboardOptions = KeyboardOptions(
+        keyboardType = if (isPasswordTf) KeyboardType.Password else if (isEmailTf) KeyboardType.Email else KeyboardType.Text,
+        imeAction = imeAction
     )
 
     OutlinedTextField(
@@ -107,7 +109,8 @@ fun AuthTextField(
         trailingIcon = if (!isPasswordTf) null else {
             {
                 val imageVisibility = ImageVector.vectorResource(id = R.drawable.ic_visibility)
-                val imageVisibilityOff = ImageVector.vectorResource(id = R.drawable.ic_visibility_off)
+                val imageVisibilityOff =
+                    ImageVector.vectorResource(id = R.drawable.ic_visibility_off)
 
                 val description = if (visibility.value) "Hide password" else "Show password"
 
