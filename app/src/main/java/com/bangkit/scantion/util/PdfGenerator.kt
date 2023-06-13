@@ -32,7 +32,7 @@ fun saveToPdf(context: Context, skinCase: SkinCase, name: String) {
 
     val headerPaint = Paint().apply {
         color = Color.BLUE
-        textSize = 18f
+        textSize = 24f
     }
 
     val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create()
@@ -44,17 +44,17 @@ fun saveToPdf(context: Context, skinCase: SkinCase, name: String) {
 
     // Add header text and logo
     val headerText = "Scantion - A Skin Cancer Detection Application"
-    val logoBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.img_card_examination)
-    val logoWidth = 100
+    val logoBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.ic_launcher_playstore)
+    val logoWidth = 70
     val logoHeight = (logoBitmap.height.toFloat() / logoBitmap.width.toFloat() * logoWidth).toInt()
 
     val headerTextWidth = headerPaint.measureText(headerText)
-    val headerTextHeight = headerPaint.fontMetrics.descent - headerPaint.fontMetrics.ascent
+    val headerTextHeight = headerPaint.fontMetrics.descent - headerPaint.fontMetrics.ascent + 20
 
-    val headerHeight = maxOf(logoHeight, headerTextHeight.toInt()) + 20
+    val headerHeight = maxOf(logoHeight, headerTextHeight.toInt()) + 60
 
     val logoLeft = (pageWidth - (headerTextWidth + 20 + logoWidth)) / 2
-    val logoTop = (headerHeight - logoHeight).toFloat() / 2
+    val logoTop = (headerHeight - logoHeight).toFloat() / 2 + 20
 
     canvas.drawText(headerText, logoLeft + logoWidth + 20, headerHeight / 2 + headerTextHeight / 2, headerPaint)
     canvas.drawBitmap(logoBitmap, null, RectF(logoLeft, logoTop, logoLeft + logoWidth, logoTop + logoHeight), null)
