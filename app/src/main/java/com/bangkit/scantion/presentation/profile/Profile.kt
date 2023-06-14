@@ -1,6 +1,7 @@
 package com.bangkit.scantion.presentation.profile
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -34,17 +36,17 @@ import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.navigation.Graph
 import com.bangkit.scantion.navigation.HomeScreen
 import com.bangkit.scantion.ui.component.ConfirmationDialog
-import com.bangkit.scantion.viewmodel.HomeViewModel
-import com.bangkit.scantion.viewmodel.LoginViewModel
+import com.bangkit.scantion.util.Resource
+import com.bangkit.scantion.viewmodel.ProfileViewModel
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun Profile(
-    navController: NavHostController, loginViewModel: LoginViewModel = hiltViewModel(), homeViewModel: HomeViewModel = hiltViewModel(),
+    navController: NavHostController, viewModel: ProfileViewModel = hiltViewModel()
 ) {
     var userLog = UserLog()
     try {
-        userLog = homeViewModel.userLog.value!!
+        userLog = viewModel.userLog.value!!
     } catch (e: Exception){
         navController.popBackStack()
         navController.popBackStack()
@@ -56,7 +58,7 @@ fun Profile(
         Spacer(modifier = Modifier.height(20.dp))
         ProfileInfo(userLog)
         Spacer(modifier = Modifier.height(40.dp))
-        ContentSection(navController, loginViewModel)
+        ContentSection(navController, viewModel)
     }
 }
 
@@ -74,8 +76,9 @@ fun ProfileInfo(userLog: UserLog) {
 }
 
 @Composable
-fun ContentSection(navController: NavHostController, loginViewModel: LoginViewModel) {
+fun ContentSection(navController: NavHostController, viewModel: ProfileViewModel) {
     val showDialog = rememberSaveable { mutableStateOf(false) }
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     ConfirmationDialog(
         showDialog = showDialog,
@@ -85,9 +88,24 @@ fun ContentSection(navController: NavHostController, loginViewModel: LoginViewMo
         dismissText = "Batal",
         redAlert = true,
         onConfirm = {
-            loginViewModel.logout()
-            navController.popBackStack()
-            navController.navigate(Graph.AUTHENTICATION)
+            viewModel.logoutUser().observe(lifecycleOwner) {
+                if (it != null)
+                    when (it){
+                        is Resource.Loading -> {}
+                        is Resource.Success -> {
+                            if (it.data.message == "logout success"){
+                                viewModel.clearDatastore()
+                                navController.popBackStack()
+                                navController.navigate(Graph.AUTHENTICATION)
+                                Log.d("logout", "succes")
+                            }
+                        }
+
+                        is Resource.Error -> {
+                            Log.d("logout", "failed")
+                        }
+                    }
+            }
         }
     )
 

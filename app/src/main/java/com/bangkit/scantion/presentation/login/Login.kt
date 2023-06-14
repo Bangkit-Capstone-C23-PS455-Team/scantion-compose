@@ -124,6 +124,7 @@ fun ContentSection(
     var emailText by rememberSaveable { mutableStateOf("") }
     var passwordText by rememberSaveable { mutableStateOf("") }
     val passwordVisibility = rememberSaveable { mutableStateOf(true) }
+    val isLoading = rememberSaveable { mutableStateOf(false) }
 
     val emailFocusRequester = remember { FocusRequester() }
     val passwordFocusRequester = remember { FocusRequester() }
@@ -138,6 +139,7 @@ fun ContentSection(
             if (it != null) {
                 when (it) {
                     is Resource.Loading -> {
+                        isLoading.value = true
                     }
 
                     is Resource.Success -> {
@@ -152,10 +154,12 @@ fun ContentSection(
                         } else {
                             Toast.makeText(context, "Login Failed", Toast.LENGTH_LONG).show()
                         }
+                        isLoading.value = false
                     }
 
                     is Resource.Error -> {
                         Toast.makeText(context, "Error ${it.message}", Toast.LENGTH_LONG).show()
+                        isLoading.value = false
                     }
                 }
             }

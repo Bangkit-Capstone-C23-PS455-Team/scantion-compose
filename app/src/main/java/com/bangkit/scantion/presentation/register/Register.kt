@@ -1,7 +1,5 @@
 package com.bangkit.scantion.presentation.register
 
-import android.app.Activity
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -21,7 +19,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -43,8 +40,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.vectorResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.LifecycleOwner
-import com.bangkit.scantion.data.remote.response.RegisterResponse
 import com.bangkit.scantion.navigation.AuthScreen
 import com.bangkit.scantion.ui.component.AuthSpacer
 import com.bangkit.scantion.ui.component.AuthTextField
@@ -152,7 +147,7 @@ fun ContentSection(
                     is Resource.Loading -> {
                     }
                     is Resource.Success -> {
-                        if (!it.data.accessToken.isNullOrEmpty()){
+                        if (!it.data.message.isNullOrEmpty() && it.data.message == "User has been regist"){
                             Toast.makeText(context, "Registration Success, Please Login", Toast.LENGTH_LONG).show()
                             navController.popBackStack()
                             navController.navigate(AuthScreen.Login.createRoute(true))

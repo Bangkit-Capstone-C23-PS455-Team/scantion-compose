@@ -7,5 +7,5 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor (private val authRepository: AuthRepository) : ViewModel() {
-    fun registerUser(name: String, email: String, password: String) = authRepository.registerUser(name, email, password, 0, "", "",)
+    fun registerUser(name: String, email: String, password: String) = authRepository.registerUser(name, email, password, 0, "not set", "not set",)
 }

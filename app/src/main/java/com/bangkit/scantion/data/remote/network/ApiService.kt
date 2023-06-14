@@ -1,12 +1,12 @@
 package com.bangkit.scantion.data.remote.network
 
 import com.bangkit.scantion.data.remote.response.LoginResponse
+import com.bangkit.scantion.data.remote.response.LogoutResponse
 import com.bangkit.scantion.data.remote.response.RegisterResponse
 import com.bangkit.scantion.data.remote.response.UserResponse
 import retrofit2.http.*
 
 interface ApiService {
-
     @FormUrlEncoded
     @POST("register")
     suspend fun registerUser(
@@ -28,4 +28,8 @@ interface ApiService {
     @GET("user")
     suspend fun getUser(
     ): UserResponse
+
+    @POST("logout")
+    suspend fun logoutUser(
+    ): LogoutResponse
 }

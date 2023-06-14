@@ -7,6 +7,7 @@ import androidx.lifecycle.liveData
 import com.bangkit.scantion.data.remote.network.ApiConfig
 import com.bangkit.scantion.data.remote.network.ApiService
 import com.bangkit.scantion.data.remote.response.LoginResponse
+import com.bangkit.scantion.data.remote.response.LogoutResponse
 import com.bangkit.scantion.data.remote.response.RegisterResponse
 import com.bangkit.scantion.data.remote.response.UserResponse
 import com.bangkit.scantion.util.Resource
@@ -46,6 +47,18 @@ class AuthRepository (context: Context) {
             Log.e("LoginViewModel", "getUser: success")
         } catch (e: Exception) {
             Log.e("LoginViewModel", "getUser: ${e.message.toString()}")
+            emit(Resource.Error(e.message.toString()))
+        }
+    }
+
+    fun logoutUser(): LiveData<Resource<LogoutResponse>> = liveData {
+        emit(Resource.Loading)
+        try {
+            val response = apiService.logoutUser()
+            emit(Resource.Success(response))
+            Log.e("profile", "logout: success")
+        } catch (e: Exception) {
+            Log.e("profile", "logout: ${e.message.toString()}")
             emit(Resource.Error(e.message.toString()))
         }
     }
