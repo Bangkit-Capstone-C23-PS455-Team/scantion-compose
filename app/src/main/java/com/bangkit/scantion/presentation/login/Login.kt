@@ -2,6 +2,7 @@ package com.bangkit.scantion.presentation.login
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -13,12 +14,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -50,6 +56,7 @@ import com.bangkit.scantion.ui.component.AuthTextField
 import com.bangkit.scantion.ui.component.ScantionButton
 import com.bangkit.scantion.util.Resource
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Login(
     navController: NavHostController,
@@ -57,22 +64,34 @@ fun Login(
     loginViewModel: LoginViewModel = hiltViewModel()
 ) {
     val focusManager = LocalFocusManager.current
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .clickable(indication = null,
-                interactionSource = remember { MutableInteractionSource() },
-                onClick = { focusManager.clearFocus() })
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 25.dp)
-        ) {
-            TopSection(navController = navController, focusManager)
-            ContentSection(navController = navController, loginViewModel, focusManager)
-            BottomSection(navController = navController, fromWalkthrough, focusManager)
-        }
+    Scaffold(modifier = Modifier
+        .clickable(indication = null,
+            interactionSource = remember { MutableInteractionSource() },
+            onClick = { focusManager.clearFocus() }), topBar = {
+        TopAppBar(
+            title = { },
+            navigationIcon = {
+                IconButton(onClick = {
+                    focusManager.clearFocus()
+                    navController.popBackStack()
+                }) {
+                    Icon(
+                        imageVector = Icons.Outlined.KeyboardArrowLeft,
+                        contentDescription = "back"
+                    )
+                }
+            })
+    }
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier.padding(horizontal = 20.dp),
+            contentPadding = innerPadding,
+            content = {
+                item {
+                    ContentSection(navController = navController, loginViewModel, focusManager)
+                    BottomSection(navController = navController, fromWalkthrough, focusManager)
+                }
+            })
     }
 }
 
@@ -81,7 +100,7 @@ fun BottomSection(
     navController: NavHostController, fromWalkthrough: Boolean, focusManager: FocusManager
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
+        modifier = Modifier.fillMaxWidth().padding(top = 20.dp), horizontalArrangement = Arrangement.Center
     ) {
         Text(text = "Belum punya akun? ")
         Text(text = "Daftar sekarang",
@@ -95,25 +114,6 @@ fun BottomSection(
                     navController.popBackStack()
                 }
             })
-    }
-}
-
-@Composable
-fun TopSection(navController: NavHostController, focusManager: FocusManager) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = {
-            focusManager.clearFocus()
-            navController.popBackStack()
-        }) {
-            Icon(
-                imageVector = Icons.Outlined.KeyboardArrowLeft, contentDescription = "back"
-            )
-        }
     }
 }
 
@@ -166,58 +166,52 @@ fun ContentSection(
         }
     }
 
-    Column(
+    Text(
+        text = "Selamat Datang Kembali",
+        style = MaterialTheme.typography.displaySmall,
+        fontWeight = FontWeight.Bold
+    )
+    AuthSpacer()
+    AuthTextField(
         modifier = Modifier
-            .fillMaxHeight(0.9f)
             .fillMaxWidth()
-    ) {
-        Text(
-            text = "Selamat Datang Kembali",
-            style = MaterialTheme.typography.displaySmall,
-            fontWeight = FontWeight.Bold
-        )
-        AuthSpacer()
-        AuthTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(emailFocusRequester),
-            value = emailText,
-            onValueChange = { emailText = it },
-            label = { Text("Email") },
-            isEmailTf = true,
-            leadingIcon = {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_mail),
-                    contentDescription = "icon tf mail"
-                )
-            },
-            nextFocusRequester = passwordFocusRequester
-        )
-        AuthTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(passwordFocusRequester),
-            value = passwordText,
-            onValueChange = { passwordText = it },
-            label = { Text("Password") },
-            isPasswordTf = true,
-            leadingIcon = {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_password),
-                    contentDescription = "icon tf password"
-                )
-            },
-            visibility = passwordVisibility,
-            isLast = true,
-            buttonEnabled = buttonEnabled,
-            performAction = performLogin
-        )
-        AuthSpacer()
-        ScantionButton(
-            enabled = buttonEnabled,
-            onClick = performLogin,
-            text = stringResource(id = R.string.login_text),
-            modifier = Modifier.fillMaxWidth(),
-        )
-    }
+            .focusRequester(emailFocusRequester),
+        value = emailText,
+        onValueChange = { emailText = it },
+        label = { Text("Email") },
+        isEmailTf = true,
+        leadingIcon = {
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_mail),
+                contentDescription = "icon tf mail"
+            )
+        },
+        nextFocusRequester = passwordFocusRequester
+    )
+    AuthTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(passwordFocusRequester),
+        value = passwordText,
+        onValueChange = { passwordText = it },
+        label = { Text("Password") },
+        isPasswordTf = true,
+        leadingIcon = {
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_password),
+                contentDescription = "icon tf password"
+            )
+        },
+        visibility = passwordVisibility,
+        isLast = true,
+        buttonEnabled = buttonEnabled,
+        performAction = performLogin
+    )
+    AuthSpacer()
+    ScantionButton(
+        enabled = buttonEnabled,
+        onClick = performLogin,
+        text = stringResource(id = R.string.login_text),
+        modifier = Modifier.fillMaxWidth(),
+    )
 }

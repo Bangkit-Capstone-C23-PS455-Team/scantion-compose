@@ -67,7 +67,6 @@ fun AddPhotoPage(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
             .padding(top = 20.dp, start = 16.dp, end = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

@@ -10,18 +10,20 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +49,7 @@ import com.bangkit.scantion.ui.component.ScantionButton
 import com.bangkit.scantion.util.Resource
 import com.bangkit.scantion.viewmodel.RegisterViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Register(
     navController: NavHostController,
@@ -54,21 +57,35 @@ fun Register(
     registerViewModel: RegisterViewModel = hiltViewModel()
 ) {
     val focusManager = LocalFocusManager.current
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .clickable(
-            indication = null,
+
+    Scaffold(modifier = Modifier
+        .clickable(indication = null,
             interactionSource = remember { MutableInteractionSource() },
-            onClick = { focusManager.clearFocus() })){
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 25.dp)
-        ) {
-            TopSection(navController = navController, focusManager)
-            ContentSection(navController = navController, focusManager, registerViewModel)
-            BottomSection(navController = navController, fromWalkthrough, focusManager)
-        }
+            onClick = { focusManager.clearFocus() }), topBar = {
+        TopAppBar(
+            title = { },
+            navigationIcon = {
+                IconButton(onClick = {
+                    focusManager.clearFocus()
+                    navController.popBackStack()
+                }) {
+                    Icon(
+                        imageVector = Icons.Outlined.KeyboardArrowLeft,
+                        contentDescription = "back"
+                    )
+                }
+            })
+    }
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier.padding(horizontal = 20.dp),
+            contentPadding = innerPadding,
+            content = {
+                item {
+                    ContentSection(navController = navController, focusManager, registerViewModel)
+                    BottomSection(navController = navController, fromWalkthrough, focusManager)
+                }
+            })
     }
 }
 
@@ -79,7 +96,7 @@ fun BottomSection(
     focusManager: FocusManager
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
+        modifier = Modifier.fillMaxWidth().padding(top = 20.dp), horizontalArrangement = Arrangement.Center
     ) {
         Text(text = "Sudah punya akun? ")
         Text(text = "Masuk",
@@ -93,25 +110,6 @@ fun BottomSection(
                     navController.popBackStack()
                 }
             })
-    }
-}
-
-@Composable
-fun TopSection(navController: NavHostController, focusManager: FocusManager) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = {
-            focusManager.clearFocus()
-            navController.popBackStack()
-        }) {
-            Icon(
-                imageVector = Icons.Outlined.KeyboardArrowLeft, contentDescription = "back"
-            )
-        }
     }
 }
 
@@ -163,98 +161,92 @@ fun ContentSection(
         }
     }
 
-    Column(
+    Text(
+        text = "Halo, Silahkan Daftar Untuk Memulai",
+        style = MaterialTheme.typography.displaySmall,
+        fontWeight = FontWeight.Bold
+    )
+    AuthSpacer()
+    AuthTextField(
         modifier = Modifier
-            .fillMaxHeight(0.9f)
             .fillMaxWidth()
-    ) {
-        Text(
-            text = "Halo, Silahkan Daftar Untuk Memulai",
-            style = MaterialTheme.typography.displaySmall,
-            fontWeight = FontWeight.Bold
-        )
-        AuthSpacer()
-        AuthTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(nameFocusRequester),
-            value = nameText,
-            onValueChange = { nameText = it },
-            label = { Text("Name") },
-            isEmailTf = true,
-            leadingIcon = {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_name),
-                    contentDescription = "icon tf name"
-                )
-            },
-            nextFocusRequester = emailFocusRequester
-        )
+            .focusRequester(nameFocusRequester),
+        value = nameText,
+        onValueChange = { nameText = it },
+        label = { Text("Name") },
+        isEmailTf = true,
+        leadingIcon = {
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_name),
+                contentDescription = "icon tf name"
+            )
+        },
+        nextFocusRequester = emailFocusRequester
+    )
 
-        AuthSpacer()
-        AuthTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(emailFocusRequester),
-            value = emailText,
-            onValueChange = { emailText = it },
-            label = { Text("Email") },
-            leadingIcon = {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_mail),
-                    contentDescription = "icon tf mail"
-                )
-            },
-            nextFocusRequester = passwordFocusRequester
-        )
+    AuthSpacer()
+    AuthTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(emailFocusRequester),
+        value = emailText,
+        onValueChange = { emailText = it },
+        label = { Text("Email") },
+        leadingIcon = {
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_mail),
+                contentDescription = "icon tf mail"
+            )
+        },
+        nextFocusRequester = passwordFocusRequester
+    )
 
-        AuthSpacer()
+    AuthSpacer()
 
-        AuthTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(passwordFocusRequester),
-            value = passwordText,
-            onValueChange = { passwordText = it },
-            label = { Text("Password") },
-            isPasswordTf = true,
-            leadingIcon = {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_password),
-                    contentDescription = "icon tf password"
-                )
-            },
-            visibility = passwordVisibility,
-            nextFocusRequester = confirmPasswordFocusRequester
-        )
+    AuthTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(passwordFocusRequester),
+        value = passwordText,
+        onValueChange = { passwordText = it },
+        label = { Text("Password") },
+        isPasswordTf = true,
+        leadingIcon = {
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_password),
+                contentDescription = "icon tf password"
+            )
+        },
+        visibility = passwordVisibility,
+        nextFocusRequester = confirmPasswordFocusRequester
+    )
 
-        AuthSpacer()
+    AuthSpacer()
 
-        AuthTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(confirmPasswordFocusRequester),
-            value = confirmPasswordText,
-            onValueChange = { confirmPasswordText = it },
-            label = { Text("Confirm Password") },
-            isPasswordTf = true,
-            leadingIcon = {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_password),
-                    contentDescription = "icon tf password"
-                )
-            },
-            visibility = confirmPasswordVisibility,
-            isLast = true,
-            buttonEnabled = buttonEnabled,
-            performAction = performRegistration
-        )
-        AuthSpacer()
-        ScantionButton(
-            enabled = buttonEnabled,
-            onClick = performRegistration,
-            text = stringResource(id = R.string.register_text),
-            modifier = Modifier.fillMaxWidth(),
-        )
-    }
+    AuthTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(confirmPasswordFocusRequester),
+        value = confirmPasswordText,
+        onValueChange = { confirmPasswordText = it },
+        label = { Text("Confirm Password") },
+        isPasswordTf = true,
+        leadingIcon = {
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_password),
+                contentDescription = "icon tf password"
+            )
+        },
+        visibility = confirmPasswordVisibility,
+        isLast = true,
+        buttonEnabled = buttonEnabled,
+        performAction = performRegistration
+    )
+    AuthSpacer()
+    ScantionButton(
+        enabled = buttonEnabled,
+        onClick = performRegistration,
+        text = stringResource(id = R.string.register_text),
+        modifier = Modifier.fillMaxWidth(),
+    )
 }

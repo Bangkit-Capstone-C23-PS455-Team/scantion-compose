@@ -11,9 +11,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -101,7 +103,9 @@ fun ScantionAppCompose(
             Scaffold(bottomBar = {
                 when (backStackEntry.value?.destination?.route) {
                     HomeScreen.Home.route, HomeScreen.Profile.route -> {
-                        NavBar(navController, backStackEntry)
+                        BottomAppBar {
+                            NavBar(navController, backStackEntry)
+                        }
                     }
                 }
             }, content = {
@@ -184,7 +188,8 @@ fun NavBar(
         ),
     )
 
-    Box(contentAlignment = Alignment.Center) {
+    Box(modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center) {
         NavigationBar{
             navBarItems.forEach { item ->
                 val selected = item.route == backStackEntry.value?.destination?.route
@@ -216,11 +221,11 @@ fun NavBar(
                 )
             }
         }
-        
+
         Button(
             modifier = Modifier
                 .fillMaxWidth(.28f)
-                .height(50.dp),
+                .height(55.dp),
             onClick = { navController.navigate(navBarItems[1].route) },
         ) {
             Icon(navBarItems[1].icon, contentDescription = "create examination")

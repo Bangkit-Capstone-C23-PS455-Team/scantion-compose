@@ -97,7 +97,7 @@ fun TopSection(visible: Boolean, onSkipClick: () -> Unit = {}) {
             TextButton(
                 onClick = onSkipClick, contentPadding = PaddingValues(0.dp)
             ) {
-                Text(text = "Skip", color = MaterialTheme.colorScheme.onSecondary)
+                Text(text = "Skip", color = MaterialTheme.colorScheme.onSecondary, modifier = Modifier.padding(top = 50.dp))
             }
         }
     }
@@ -189,12 +189,15 @@ fun WalkthroughItem(
     items: WalkthroughItems, page: Int, navController: NavHostController, size: Int
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        Image(
-            modifier = Modifier.fillMaxWidth(),
-            imageVector = ImageVector.vectorResource(id = items.background),
-            contentDescription = "background item walkthrough",
-            colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary)
-        )
+        Column(Modifier.fillMaxWidth()) {
+            Box(modifier = Modifier.fillMaxWidth().height(50.dp).background(MaterialTheme.colorScheme.primary))
+            Image(
+                modifier = Modifier.fillMaxWidth(),
+                imageVector = ImageVector.vectorResource(id = items.background),
+                contentDescription = "background item walkthrough",
+                colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary)
+            )
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -203,7 +206,9 @@ fun WalkthroughItem(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(top = 50.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 100.dp),
                 horizontalAlignment = if (page == size - 1) Alignment.CenterHorizontally else if (page % 2 == 0) Alignment.Start else Alignment.End
             ) {
                 Text(text = "Scantion", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)

@@ -114,7 +114,7 @@ fun Home(
             }
         )
         Card(
-            shape = MaterialTheme.shapes.large, modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp)
+            shape = MaterialTheme.shapes.large, modifier = Modifier.padding(horizontal = 16.dp)
         ) {
             Row(
                 modifier = Modifier

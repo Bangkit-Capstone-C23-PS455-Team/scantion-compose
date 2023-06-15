@@ -25,18 +25,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -82,7 +85,7 @@ import com.bangkit.scantion.util.saveToPdf
 import com.bangkit.scantion.viewmodel.ExaminationViewModel
 import com.bangkit.scantion.viewmodel.HomeViewModel
 import java.util.UUID
-@SuppressLint("StateFlowValueCalledInComposition")
+@SuppressLint("StateFlowValueCalledInComposition", "UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun Examination(
@@ -131,6 +134,9 @@ fun Examination(
     var isProcessDone by rememberSaveable { mutableStateOf(false) }
     var isGotResult by rememberSaveable { mutableStateOf(false) }
     var isPostDone by rememberSaveable { mutableStateOf(false) }
+
+    val isQuestionAnswered =
+        bodyPart.isNotEmpty() && howLong.isNotEmpty() && symptom.isNotEmpty()
 
     var skinCase by rememberSaveable { mutableStateOf<SkinCase?>(null) }
 
@@ -212,101 +218,104 @@ fun Examination(
 
     val focusManager = LocalFocusManager.current
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .clickable(
-                indication = null,
-                interactionSource = remember { MutableInteractionSource() },
-                onClick = { focusManager.clearFocus() })
-    ) {
-        TopAppBar(
-            title = {
-                Text(
-                    text = "Pemeriksaan",
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            },
-            navigationIcon = {
-                IconButton(
-                    onClick = {
-                        if (!hasImage || isProcessDone) {
-                            navController.popBackStack()
-                        } else {
-                            showDialog.value = true
+    Scaffold(
+        modifier = Modifier.clickable(indication = null,
+            interactionSource = remember { MutableInteractionSource() },
+            onClick = { focusManager.clearFocus() }),
+        topBar = {
+            Column {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Pemeriksaan",
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                if (!hasImage || isProcessDone) {
+                                    navController.popBackStack()
+                                } else {
+                                    showDialog.value = true
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Close, contentDescription = "close"
+                            )
                         }
+                    },
+                )
+                TopSection(
+                    items = items,
+                    index = pageState.currentPage
+                )
+            }
+        },
+        bottomBar = {
+            BottomAppBar {
+                BottomSection(
+                    userLog,
+                    context,
+                    navController,
+                    hasImage,
+                    isQuestionAnswered,
+                    skinCase,
+                    items.size,
+                    pageState.currentPage,
+                    onNextClick = {
+                        if (pageState.currentPage < items.size - 1) scope.launch {
+                            pageState.animateScrollToPage(pageState.currentPage + 1)
+                        }
+                    },
+                    onPrevClick = {
+                        if (pageState.currentPage + 1 > 1) scope.launch {
+                            pageState.animateScrollToPage(pageState.currentPage - 1)
+                        }
+                    },
+                    onProcessClick = {
+                        isProcessDone = true
                     }
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Close, contentDescription = "close"
+                )
+            }
+        }
+    ) {innerPadding ->
+        LazyColumn(
+            contentPadding = innerPadding,
+            content = {
+            item{
+                HorizontalPager(
+                    count = items.size,
+                    state = pageState,
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    userScrollEnabled = false
+                ) { page ->
+                    ExaminationPage(
+                        navController,
+                        context,
+                        userLog,
+                        page,
+                        bodyPart,
+                        howLong,
+                        symptom,
+                        photoUri,
+                        hasImage,
+                        isProcessDone,
+                        onBodyPartChange = { bodyPart = it },
+                        onSymptomChange = { symptom = it },
+                        onHowLongChange = { howLong = it },
+                        onPhotoUriChange = { photoUri = it },
+                        onHasImageChange = { hasImage = it },
+                        backCallbackEnabled,
+                        skinCase
                     )
                 }
-            },
-        )
-
-        TopSection(
-            items = items,
-            index = pageState.currentPage
-        )
-
-        HorizontalPager(
-            count = items.size,
-            state = pageState,
-            modifier = Modifier
-                .fillMaxHeight(.89f)
-                .fillMaxWidth(),
-            userScrollEnabled = false
-        ) { page ->
-            ExaminationPage(
-                navController,
-                context,
-                userLog,
-                page,
-                bodyPart,
-                howLong,
-                symptom,
-                photoUri,
-                hasImage,
-                isProcessDone,
-                onBodyPartChange = { bodyPart = it },
-                onSymptomChange = { symptom = it },
-                onHowLongChange = { howLong = it },
-                onPhotoUriChange = { photoUri = it },
-                onHasImageChange = { hasImage = it },
-                backCallbackEnabled,
-                skinCase
-            )
-        }
-
-        val isQuestionAnswered =
-            bodyPart.isNotEmpty() && howLong.isNotEmpty() && symptom.isNotEmpty()
-
-        BottomSection(
-            userLog,
-            context,
-            navController,
-            hasImage,
-            isQuestionAnswered,
-            skinCase,
-            items.size,
-            pageState.currentPage,
-            onNextClick = {
-                if (pageState.currentPage < items.size - 1) scope.launch {
-                    pageState.animateScrollToPage(pageState.currentPage + 1)
-                }
-            },
-            onPrevClick = {
-                if (pageState.currentPage + 1 > 1) scope.launch {
-                    pageState.animateScrollToPage(pageState.currentPage - 1)
-                }
-            },
-            onProcessClick = {
-                isProcessDone = true
             }
-        )
-
+        })
     }
 }
 
@@ -378,10 +387,10 @@ fun TopSection(
         animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
     )
 
-    Column {
+    Column(modifier = Modifier.fillMaxWidth().background(color = MaterialTheme.colorScheme.surface),) {
         Box(
             modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Column {
                 LinearProgressIndicator(

@@ -65,7 +65,6 @@ fun ResultPage(navController: NavHostController, userLog: UserLog, skinCase: Ski
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
     ) {
         ColumnPartResult {
             TitleTextResult(text = "Detail Pemeriksaan")

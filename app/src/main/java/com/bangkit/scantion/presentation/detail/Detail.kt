@@ -11,14 +11,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -58,11 +61,11 @@ fun Detail(
     skinCaseId: String,
     homeViewModel: HomeViewModel = hiltViewModel(),
     examinationViewModel: ExaminationViewModel = hiltViewModel()
-){
+) {
     var userLog = UserLog()
     try {
         userLog = homeViewModel.userLog.value!!
-    } catch (e: Exception){
+    } catch (e: Exception) {
         navController.popBackStack()
         navController.navigate(Graph.AUTHENTICATION)
     }
@@ -74,40 +77,75 @@ fun Detail(
 
     LaunchedEffect(true) {
         scope.launch(Dispatchers.IO) {
-            skinCase.value = examinationViewModel.getSkinExamById(skinCaseId = skinCaseId) ?:Constants.skinCaseDetailPlaceHolder
+            skinCase.value = examinationViewModel.getSkinExamById(skinCaseId = skinCaseId)
+                ?: Constants.skinCaseDetailPlaceHolder
         }
     }
 
     val context = LocalContext.current
 
-    Column(modifier = Modifier.fillMaxSize(),
-    verticalArrangement = Arrangement.SpaceBetween) {
-        TopAppBar(
-            title = {
-                Text(
-                    text = "Detail Pemeriksaan",
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Detail Pemeriksaan",
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Outlined.KeyboardArrowLeft,
+                            contentDescription = "back"
+                        )
+                    }
+                },
+            )
+        }, bottomBar = {
+            BottomAppBar {
+                BottomSection(
+                    navController = navController,
+                    skinCase = skinCase.value,
+                    userLog = userLog,
+                    context = context,
+                    examinationViewModel
                 )
-            },
-            navigationIcon = {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(
-                        imageVector = Icons.Outlined.KeyboardArrowLeft,
-                        contentDescription = "back"
+            }
+        }
+    ) { innerPadding ->
+        LazyColumn(
+            contentPadding = innerPadding,
+            content = {
+                item {
+                    ResultPage(
+                        navController,
+                        userLog = userLog,
+                        skinCase = skinCase.value,
+                        isFromDetail = true
                     )
                 }
-            },
-        )
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(.9f)) {
-            ResultPage(navController, userLog = userLog, skinCase = skinCase.value, isFromDetail = true)
+            })
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(.9f)
+        ) {
+
         }
-        BottomSection(navController = navController, skinCase = skinCase.value, userLog = userLog, context = context, examinationViewModel)
+
     }
 }
+
 @Composable
 fun BottomSection(
     navController: NavHostController,
@@ -167,7 +205,7 @@ fun BottomSection(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 10.dp),
-                    onClick = {showDialog.value = true},
+                    onClick = { showDialog.value = true },
                     text = "Hapus",
                     textStyle = MaterialTheme.typography.bodySmall,
                     iconEnd = true,
