@@ -17,9 +17,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -29,6 +31,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -46,6 +49,7 @@ import com.bangkit.scantion.util.Resource
 import com.bangkit.scantion.viewmodel.ExaminationViewModel
 import com.bangkit.scantion.viewmodel.HomeViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun Home(
@@ -99,16 +103,18 @@ fun Home(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        Text(
-            modifier = Modifier
-                .padding(vertical = 30.dp)
-                .padding(horizontal = 16.dp),
-            text = "Halo, ${userLog.name}",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
+        TopAppBar(
+            title = {
+                Text(
+                    text = "Halo, ${userLog.name}",
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         )
         Card(
-            shape = MaterialTheme.shapes.large, modifier = Modifier.padding(horizontal = 16.dp)
+            shape = MaterialTheme.shapes.large, modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp)
         ) {
             Row(
                 modifier = Modifier

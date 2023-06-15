@@ -1,10 +1,8 @@
 package com.bangkit.scantion.presentation.examination
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.AnimatedVisibility
@@ -33,12 +31,14 @@ import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -65,6 +65,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -77,14 +78,12 @@ import com.bangkit.scantion.ui.component.ConfirmationDialog
 import com.bangkit.scantion.ui.component.ScantionButton
 import com.bangkit.scantion.util.ImageFileProvider
 import com.bangkit.scantion.util.ImageFileProvider.Companion.savedImage
-import com.bangkit.scantion.util.checkStoragePermissions
-import com.bangkit.scantion.util.requestStoragePermissions
 import com.bangkit.scantion.util.saveToPdf
 import com.bangkit.scantion.viewmodel.ExaminationViewModel
 import com.bangkit.scantion.viewmodel.HomeViewModel
 import java.util.UUID
 @SuppressLint("StateFlowValueCalledInComposition")
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun Examination(
     navController: NavHostController,
@@ -92,7 +91,6 @@ fun Examination(
     examinationViewModel: ExaminationViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val activity = (LocalContext.current as? Activity)
 
     var userLog = UserLog()
 
@@ -222,13 +220,35 @@ fun Examination(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = { focusManager.clearFocus() })
     ) {
+        TopAppBar(
+            title = {
+                Text(
+                    text = "Pemeriksaan",
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            },
+            navigationIcon = {
+                IconButton(
+                    onClick = {
+                        if (!hasImage || isProcessDone) {
+                            navController.popBackStack()
+                        } else {
+                            showDialog.value = true
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Close, contentDescription = "close"
+                    )
+                }
+            },
+        )
+
         TopSection(
             items = items,
-            index = pageState.currentPage,
-            navController,
-            isProcessDone,
-            hasImage,
-            showDialog
+            index = pageState.currentPage
         )
 
         HorizontalPager(
@@ -263,32 +283,30 @@ fun Examination(
         val isQuestionAnswered =
             bodyPart.isNotEmpty() && howLong.isNotEmpty() && symptom.isNotEmpty()
 
-        if (activity != null) {
-            BottomSection(
-                userLog,
-                activity,
-                context,
-                navController,
-                hasImage,
-                isQuestionAnswered,
-                skinCase,
-                items.size,
-                pageState.currentPage,
-                onNextClick = {
-                    if (pageState.currentPage < items.size - 1) scope.launch {
-                        pageState.animateScrollToPage(pageState.currentPage + 1)
-                    }
-                },
-                onPrevClick = {
-                    if (pageState.currentPage + 1 > 1) scope.launch {
-                        pageState.animateScrollToPage(pageState.currentPage - 1)
-                    }
-                },
-                onProcessClick = {
-                    isProcessDone = true
+        BottomSection(
+            userLog,
+            context,
+            navController,
+            hasImage,
+            isQuestionAnswered,
+            skinCase,
+            items.size,
+            pageState.currentPage,
+            onNextClick = {
+                if (pageState.currentPage < items.size - 1) scope.launch {
+                    pageState.animateScrollToPage(pageState.currentPage + 1)
                 }
-            )
-        }
+            },
+            onPrevClick = {
+                if (pageState.currentPage + 1 > 1) scope.launch {
+                    pageState.animateScrollToPage(pageState.currentPage - 1)
+                }
+            },
+            onProcessClick = {
+                isProcessDone = true
+            }
+        )
+
     }
 }
 
@@ -351,10 +369,6 @@ fun ExaminationPage(
 fun TopSection(
     items: List<ExaminationItems>,
     index: Int,
-    navController: NavHostController,
-    isProcessDone: Boolean,
-    hasImage: Boolean,
-    showDialog: MutableState<Boolean>
 ) {
     val size = items.size
     val progress =
@@ -365,32 +379,6 @@ fun TopSection(
     )
 
     Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = {
-                    if (!hasImage || isProcessDone) {
-                        navController.popBackStack()
-                    } else {
-                        showDialog.value = true
-                    }
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Close, contentDescription = "close"
-                )
-            }
-            Text(
-                modifier = Modifier.padding(start = 16.dp),
-                text = "Pemeriksaan",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-        }
         Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
@@ -469,7 +457,6 @@ fun Indicator(i: Int, index: Int, items: ExaminationItems) {
 @Composable
 fun BottomSection(
     userLog: UserLog,
-    activity: Activity,
     context: Context,
     navController: NavHostController,
     hasImage: Boolean,
@@ -509,17 +496,8 @@ fun BottomSection(
                                 if (!isOnResult) {
                                     onPrevClick.invoke()
                                 } else {
-                                    if (checkStoragePermissions(context)) {
-                                        Toast.makeText(
-                                            context,
-                                            "Permissions Granted..",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        if (skinCase != null) {
-                                            saveToPdf(context, skinCase, userLog.name)
-                                        }
-                                    } else {
-                                        requestStoragePermissions(activity)
+                                    if (skinCase != null) {
+                                        saveToPdf(context, skinCase, userLog.name)
                                     }
                                 }
                             }

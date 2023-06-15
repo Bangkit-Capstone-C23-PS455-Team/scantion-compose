@@ -17,6 +17,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -31,6 +34,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
@@ -39,6 +43,18 @@ fun CarouselNews(
     newsList: List<News>
 ) {
     val carouselState: PagerState = rememberPagerState()
+
+    val autoSlideEnabled = remember {mutableStateOf(true)}
+    val autoSlideInterval = 4000L
+
+    LaunchedEffect(autoSlideEnabled.value) {
+        if (autoSlideEnabled.value) {
+            while (true) {
+                delay(autoSlideInterval)
+                carouselState.animateScrollToPage((carouselState.currentPage + 1) % newsList.size)
+            }
+        }
+    }
 
     Column(modifier = Modifier.fillMaxWidth(),
     verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -62,7 +78,7 @@ fun CarouselNews(
 @Composable
 private fun ImageContainer(newsList: List<News>, page: Int) {
     AsyncImage(
-        model = ImageRequest.Builder(LocalContext.current).data(newsList[page].image).crossfade(true).scale(Scale.FILL).build(),
+        model = ImageRequest.Builder(LocalContext.current).data(newsList[page].thumb).crossfade(true).scale(Scale.FILL).build(),
         contentDescription = "Image News",
     )
 }

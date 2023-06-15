@@ -1,16 +1,16 @@
 package com.bangkit.scantion.util
 
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.graphics.*
 import android.graphics.pdf.PdfDocument
 import android.net.Uri
-import android.os.Environment
+import android.provider.MediaStore
 import android.widget.Toast
 import com.bangkit.scantion.R
 import com.bangkit.scantion.model.SkinCase
-import java.io.File
-import java.io.FileOutputStream
 
 @SuppressLint("QueryPermissionsNeeded")
 fun saveToPdf(context: Context, skinCase: SkinCase, name: String) {
@@ -110,24 +110,59 @@ fun saveToPdf(context: Context, skinCase: SkinCase, name: String) {
 
     pdfDocument.finishPage(page)
 
-    val folderName = "Scantion"
-    val folder = File(Environment.getExternalStorageDirectory(), folderName)
-    if (!folder.exists()) {
-        folder.mkdirs()
+    val pdfName = "scantion${skinCase.dateCreated}.pdf"
+
+    val values = ContentValues().apply {
+        put(MediaStore.Downloads.MIME_TYPE, "application/pdf")
+        put(MediaStore.Downloads.DISPLAY_NAME, pdfName)
+        put(MediaStore.Downloads.IS_PENDING, 1)
     }
 
-    val fileName = "scantion_${skinCase.dateCreated}.pdf"
-    val file = File(folder, fileName)
+    val resolver = context.contentResolver
+    val collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
 
-    try {
-        pdfDocument.writeTo(FileOutputStream(file))
+    val pdfUri = resolver.insert(collection, values)
 
-        Toast.makeText(context, "PDF file generated in:\n$folderName\\$fileName", Toast.LENGTH_SHORT).show()
-    } catch (e: Exception) {
-        e.printStackTrace()
+    pdfUri?.let { uri ->
+        resolver.openOutputStream(uri)?.use { outputStream ->
+            pdfDocument.writeTo(outputStream)
 
-        Toast.makeText(context, "Fail to generate PDF file..", Toast.LENGTH_SHORT)
-            .show()
+            Toast.makeText(context, "PDF file generated: Download/$pdfName", Toast.LENGTH_SHORT).show()
+            // Open the PDF file using an intent
+            val openIntent = Intent(Intent.ACTION_VIEW)
+            openIntent.setDataAndType(uri, "application/pdf")
+            openIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_CLEAR_TOP
+
+            if (openIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(openIntent)
+            } else {
+                Toast.makeText(context, "No PDF viewer application found", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        values.clear()
+        values.put(MediaStore.Downloads.IS_PENDING, 0)
+        resolver.update(uri, values, null, null)
     }
+
     pdfDocument.close()
+
+//    val pdfDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+//
+//    pdfDocument.finishPage(page)
+//
+//    val fileName = "scantion_${skinCase.dateCreated}.pdf"
+//    val file = File(pdfDir, fileName)
+//
+//    try {
+//        pdfDocument.writeTo(FileOutputStream(file))
+//
+//        Toast.makeText(context, "PDF file generated in:\n${pdfDir}/$fileName", Toast.LENGTH_SHORT).show()
+//    } catch (e: Exception) {
+//        e.printStackTrace()
+//
+//        Toast.makeText(context, "Fail to generate PDF file..", Toast.LENGTH_SHORT)
+//            .show()
+//    }
+//    pdfDocument.close()
 }

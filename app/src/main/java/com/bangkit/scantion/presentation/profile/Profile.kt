@@ -13,9 +13,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -26,6 +29,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -39,6 +43,7 @@ import com.bangkit.scantion.ui.component.ConfirmationDialog
 import com.bangkit.scantion.util.Resource
 import com.bangkit.scantion.viewmodel.ProfileViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun Profile(
@@ -49,12 +54,20 @@ fun Profile(
         userLog = viewModel.userLog.value!!
     } catch (e: Exception){
         navController.popBackStack()
-        navController.popBackStack()
         navController.navigate(Graph.AUTHENTICATION)
     }
     DoubleClickBackClose()
     Column(modifier = Modifier.fillMaxSize()) {
-        TopSection()
+        TopAppBar(
+            title = {
+                Text(
+                    text = "Profil",
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        )
         Spacer(modifier = Modifier.height(20.dp))
         ProfileInfo(userLog)
         Spacer(modifier = Modifier.height(40.dp))
@@ -182,22 +195,5 @@ fun ProfileSpacer() {
             .background(color = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Spacer(modifier = Modifier.fillMaxSize())
-    }
-}
-
-@Composable
-fun TopSection() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            modifier = Modifier.padding(start = 16.dp),
-            text = "Profile",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
     }
 }

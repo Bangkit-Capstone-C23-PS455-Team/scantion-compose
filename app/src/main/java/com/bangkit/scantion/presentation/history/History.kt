@@ -1,11 +1,13 @@
 package com.bangkit.scantion.presentation.history
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,10 +23,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.livedata.observeAsState
@@ -37,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -49,67 +55,69 @@ import com.bangkit.scantion.util.Constants.orPlaceHolderList
 import com.bangkit.scantion.util.getDayFormat
 import com.bangkit.scantion.viewmodel.ExaminationViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun History(
     navController: NavHostController,
     examinationViewModel: ExaminationViewModel = hiltViewModel()
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        TopSection(navController)
-        ContentSection(navController, examinationViewModel)
-    }
-}
-
-@Composable
-fun ContentSection(
-    navController: NavController,
-    examinationViewModel: ExaminationViewModel
-) {
     val skinCaseQuery = remember { mutableStateOf("") }
     val skinExams = examinationViewModel.skinExams.observeAsState()
-    ListSkinExams(
-        navController = navController,
-        skinCases = skinExams.value.orPlaceHolderList(),
-        query = skinCaseQuery
-    )
-}
+    val skinCases = skinExams.value.orPlaceHolderList()
 
-@Composable
-fun ListSkinExams(
-    navController: NavController,
-    skinCases: List<SkinCase>,
-    query: MutableState<String>,
-) {
-    if (skinCases[0].id == "empty") {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 100.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = skinCases[0].userId)
-            Text(text = skinCases[0].bodyPart)
-        }
-    } else {
-        LazyColumn {
-            val queriedSkinExams = if (query.value.isEmpty()) {
-                skinCases
-            } else {
-                skinCases.filter { it.id.contains(query.value) || it.bodyPart.contains(query.value) }
-            }
-            itemsIndexed(queriedSkinExams) { _, skinCase ->
-                SkinCaseListItem(
-                    skinCase,
-                    navController = navController
-                )
-                Spacer(
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Daftar Riwayat Pemeriksaan",
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Outlined.KeyboardArrowLeft,
+                            contentDescription = "back"
+                        )
+                    }
+                },
+            )
+        },
+        content = {innerPadding ->
+            if (skinCases[0].id == "empty") {
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(12.dp)
-                )
+                        .padding(vertical = 200.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = skinCases[0].userId)
+                    Text(text = skinCases[0].bodyPart)
+                }
+            } else {
+                LazyColumn (
+                    contentPadding = innerPadding,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ){
+                    val queriedSkinExams = if (skinCaseQuery.value.isEmpty()) {
+                        skinCases
+                    } else {
+                        skinCases.filter { it.id.contains(skinCaseQuery.value) || it.bodyPart.contains(skinCaseQuery.value) }
+                    }
+                    itemsIndexed(queriedSkinExams) { _, skinCase ->
+                        SkinCaseListItem(
+                            skinCase,
+                            navController = navController
+                        )
+                    }
+                }
             }
         }
-    }
+    )
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -181,31 +189,5 @@ fun SkinCaseListItem(skinCase: SkinCase, navController: NavController) {
             }
 
         }
-    }
-}
-
-@Composable
-fun TopSection(navController: NavController) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(
-            onClick = {
-                navController.popBackStack()
-            }
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.KeyboardArrowLeft, contentDescription = "close"
-            )
-        }
-        Text(
-            modifier = Modifier.padding(start = 16.dp),
-            text = "Riwayat Pemeriksaan",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
-        )
     }
 }

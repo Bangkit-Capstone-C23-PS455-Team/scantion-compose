@@ -62,7 +62,6 @@ import kotlinx.coroutines.withContext
 @HiltAndroidApp
 class ScantionApp : Application()
 
-@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition",
     "UnrememberedMutableState"
 )
@@ -76,6 +75,7 @@ fun ScantionAppCompose(
 ) {
     val isInitTheme = rememberSaveable{mutableStateOf(initTheme)}
     val isDarkTheme = rememberSaveable{mutableStateOf(darkTheme)}
+
 
     LaunchedEffect(isInitTheme.value) {
         if (isInitTheme.value) {

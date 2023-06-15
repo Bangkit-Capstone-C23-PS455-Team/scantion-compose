@@ -64,7 +64,7 @@ fun ResultPage(navController: NavHostController, userLog: UserLog, skinCase: Ski
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .verticalScroll(rememberScrollState())
     ) {
         ColumnPartResult {

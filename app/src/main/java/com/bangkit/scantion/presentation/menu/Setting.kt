@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
@@ -23,12 +25,14 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.bangkit.scantion.R
 import com.bangkit.scantion.presentation.profile.ProfileSpacer
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Setting(
     navController: NavHostController,
@@ -37,7 +41,24 @@ fun Setting(
 ){
     Column(modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceBetween) {
-        TopSection(navController = navController)
+        TopAppBar(
+            title = {
+                Text(
+                    text = "Pengaturan",
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            },
+            navigationIcon = {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.Outlined.KeyboardArrowLeft,
+                        contentDescription = "back"
+                    )
+                }
+            },
+        )
         ContentSetting(isDarkTheme, onThemeChange)
     }
 }
@@ -78,34 +99,6 @@ fun ContentSetting(isDarkTheme: MutableState<Boolean>, onThemeChange: (Boolean) 
                     onCheckedChange = onThemeChange
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun TopSection(navController: NavController) {
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = {
-                    navController.popBackStack()
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.KeyboardArrowLeft, contentDescription = "close"
-                )
-            }
-            Text(
-                modifier = Modifier.padding(start = 16.dp),
-                text = "Pengaturan",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
         }
     }
 }

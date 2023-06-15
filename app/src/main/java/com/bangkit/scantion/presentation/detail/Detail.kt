@@ -15,10 +15,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -47,6 +50,7 @@ import com.bangkit.scantion.viewmodel.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun Detail(
@@ -78,7 +82,24 @@ fun Detail(
 
     Column(modifier = Modifier.fillMaxSize(),
     verticalArrangement = Arrangement.SpaceBetween) {
-        TopSection(navController = navController)
+        TopAppBar(
+            title = {
+                Text(
+                    text = "Detail Pemeriksaan",
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            },
+            navigationIcon = {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.Outlined.KeyboardArrowLeft,
+                        contentDescription = "back"
+                    )
+                }
+            },
+        )
         Column(modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(.9f)) {
@@ -87,35 +108,6 @@ fun Detail(
         BottomSection(navController = navController, skinCase = skinCase.value, userLog = userLog, context = context, examinationViewModel)
     }
 }
-
-@Composable
-fun TopSection(navController: NavController) {
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = {
-                    navController.popBackStack()
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.KeyboardArrowLeft, contentDescription = "close"
-                )
-            }
-            Text(
-                modifier = Modifier.padding(start = 16.dp),
-                text = "Detail Pemeriksaan",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
-
 @Composable
 fun BottomSection(
     navController: NavHostController,

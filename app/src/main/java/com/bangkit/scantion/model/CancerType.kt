@@ -15,62 +15,62 @@ class CancerType(
                 "Benign" to
                         CancerType(
                             displayName = "Benign",
-                            fullName = "Benign / tumor (non cancerous)",
-                            desc = "Benign refers to a non-cancerous condition or growth. Unlike malignant (cancerous) tumors, benign tumors do not invade nearby tissues or spread to other parts of the body. They tend to grow slowly and remain localized to the site where they originated.",
-                            symptom = "1. Non-invasive: Benign tumors do not invade surrounding tissues or organs. They typically grow in a contained manner and do not spread to other areas of the body.\n" +
+                            fullName = "Benign / tumor (non kanker)",
+                            desc = "Benign mengacu pada kondisi atau pertumbuhan non-kanker. Tidak seperti tumor ganas (kanker), tumor Benign tidak menyerang jaringan disekitarnya atau menyebar ke bagian tubuh yang lain. Mereka cenderung tumbuh lambat dan tetap terlokalisasi di tempat asalnya.",
+                            symptom = "1. Non-invasif: Tumor Benign tidak menyerang jaringan atau organ di sekitarnya. Mereka biasanya tumbuh dengan cara yang terkendali dan tidak menyebar ke area lain di tubuh.\n" +
                                     "\n" +
-                                    "2. Well-defined borders: Benign tumors often have distinct and well-defined borders, which can help differentiate them from malignant tumors.\n" +
+                                    "2. Perbatasan yang jelas: Tumor Benign sering memiliki batas yang jelas dan jelas, yang dapat membantu membedakannya dari tumor ganas.\n" +
                                     "\n" +
-                                    "3. Slow growth: Benign tumors tend to grow at a slower pace compared to malignant tumors. Their growth rate may vary depending on the type and location of the tumor.\n" +
+                                    "3. Pertumbuhan lambat: Tumor Benign cenderung tumbuh lebih lambat dibandingkan tumor ganas. Tingkat pertumbuhan mereka dapat bervariasi tergantung pada jenis dan lokasi tumor.\n" +
                                     "\n" +
-                                    "4. Encapsulated: Some benign tumors are encapsulated, meaning they are surrounded by a fibrous capsule that separates them from the surrounding tissues.\n" +
+                                    "4. Berkapsul: Beberapa tumor Benign berkapsul, artinya mereka dikelilingi oleh kapsul berserat yang memisahkannya dari jaringan di sekitarnya.\n" +
                                     "\n" +
-                                    "5. Normal cell appearance: Under a microscope, cells in benign tumors generally resemble normal cells. They do not exhibit significant cellular abnormalities or abnormal cell division.\n" +
+                                    "5. Penampilan sel normal: Di bawah mikroskop, sel-sel pada tumor Benign umumnya menyerupai sel normal. Mereka tidak menunjukkan kelainan seluler yang signifikan atau pembelahan sel yang tidak normal.\n" +
                                     "\n" +
-                                    "6. No metastasis: Benign tumors do not have the ability to metastasize or spread to other parts of the body through the bloodstream or lymphatic system.",
-                            type = "1. Nevus (NV): Nevus refers to a benign mole or birthmark on the skin. While most nevi are harmless, certain types, such as atypical or dysplastic nevi, have a slightly increased risk of developing into melanoma.\n" +
+                                    "6. Tidak ada metastasis: Tumor Benign tidak memiliki kemampuan untuk bermetastasis atau menyebar ke bagian tubuh lain melalui aliran darah atau sistem limfatik.",
+                            type = "1. Nevus (NV): Nevus mengacu pada tahi lalat Benign atau tanda lahir pada kulit. Meskipun sebagian besar nevi tidak berbahaya, jenis tertentu, seperti nevi atipikal atau displastik, memiliki risiko yang sedikit lebih tinggi untuk berkembang menjadi melanoma.\n" +
                                     "\n" +
-                                    "2. Basal Cell Carcinoma (BCC): BCC is the most common type of skin cancer, but it is not a form of melanoma. It typically develops in the basal cells of the skin's outermost layer and is commonly caused by prolonged exposure to the sun's UV rays.\n" +
+                                    "2. Basal Cell Carcinoma (BCC): BCC adalah jenis kanker kulit yang paling umum, tetapi bukan merupakan bentuk melanoma. Ini biasanya berkembang di sel basal lapisan terluar kulit dan umumnya disebabkan oleh paparan sinar UV matahari yang terlalu lama.\n" +
                                     "\n" +
-                                    "3. Actinic Keratosis (AKIEC): Actinic Keratosis, also known as solar keratosis, is a precancerous condition that appears as rough, scaly patches on sun-exposed areas of the skin. While AKIEC is not melanoma, it is important to monitor and treat these lesions as they can progress to squamous cell carcinoma, a type of skin cancer.\n" +
+                                    "3. Keratosis aktinik (AKIEC): Keratosis aktinik, juga dikenal sebagai keratosis surya, adalah kondisi prakanker yang muncul sebagai bercak kasar dan bersisik pada area kulit yang terpapar sinar matahari. Meskipun AKIEC bukan melanoma, penting untuk memantau dan mengobati lesi ini karena dapat berkembang menjadi karsinoma sel skuamosa, sejenis kanker kulit.\n" +
                                     "\n" +
-                                    "4. Benign Keratosis-like Lesions (BKL): This term generally encompasses a variety of benign skin lesions that resemble keratosis or rough patches on the skin. Examples may include seborrheic keratosis or keratoacanthoma. These lesions are non-cancerous and do not typically progress to melanoma.\n" +
+                                    "4. Benign Keratosis-Like Lesions (BKL): Istilah ini umumnya mencakup berbagai lesi kulit Benign yang menyerupai keratosis atau bercak kasar pada kulit. Contohnya mungkin termasuk keratosis seboroik atau keratoacanthoma. Lesi ini tidak bersifat kanker dan biasanya tidak berkembang menjadi melanoma.\n" +
                                     "\n" +
-                                    "5. Dermatofibroma (DF): Dermatofibromas are common benign skin growths that usually develop as small, firm bumps on the skin. They often appear on the legs and are not related to melanoma.\n" +
+                                    "5. Dermatofibroma (DF): Dermatofibroma adalah pertumbuhan kulit Benign yang umum yang biasanya berkembang sebagai benjolan kecil dan keras pada kulit. Mereka sering muncul di kaki dan tidak berhubungan dengan melanoma.\n" +
                                     "\n" +
-                                    "6. Vascular Lesions (VASC): Vascular lesions include various types of abnormalities in blood vessels, such as hemangiomas, venous malformations, or vascular tumors. These lesions are not melanoma but rather involve the blood vessels within the skin.",
-                            note = "It's important to note that although benign tumors are generally not life-threatening, their growth or presence in certain locations can still cause health issues. Some benign tumors, depending on their size or location, can exert pressure on nearby structures, leading to symptoms or complications. In such cases, medical intervention may be required to address the tumor. However, regular monitoring and follow-up may be recommended to ensure the tumor remains benign and does not undergo any significant changes over time.And SCANTION recommended all the user who has that Benign Symptoms to go the nearest Hospital or Doctor to get the spesific and detail information about it."
+                                    "6. Lesi Vaskular (VASC): Lesi vaskular mencakup berbagai jenis kelainan pada pembuluh darah, seperti hemangioma, malformasi vena, atau tumor vaskular. Lesi ini bukan melanoma melainkan melibatkan pembuluh darah di dalam kulit.",
+                            note = "Penting untuk dicatat bahwa meskipun tumor Benign umumnya tidak mengancam jiwa, pertumbuhan atau keberadaannya di lokasi tertentu masih dapat menyebabkan masalah kesehatan. Beberapa tumor Benign, tergantung pada ukuran atau lokasinya, dapat memberikan tekanan pada struktur di dekatnya, menyebabkan gejala atau komplikasi. Dalam kasus seperti itu, intervensi medis mungkin diperlukan untuk mengatasi tumor. Namun, pemantauan dan tindak lanjut secara teratur dapat direkomendasikan untuk memastikan tumor tetap Benign dan tidak mengalami perubahan signifikan dari waktu ke waktu. Dan SCANTION merekomendasikan semua pengguna yang memiliki Gejala Benign tersebut untuk pergi ke Rumah Sakit atau Dokter terdekat untuk mendapatkan hasil yang spesifik dan informasi rinci tentang hal itu."
                         ),
                 "Melanoma" to
                         CancerType(
                             displayName = "Melanoma",
                             fullName = "Melanoma (Maglinant)",
-                            desc = "Melanoma, also called malignant melanoma, is a cancer that usually starts in the skin. It can start in a mole or in normal-looking skin. A melanoma is a tumor produced by the malignant transformation of melanocytes. ",
-                            symptom = "1. Irregular Moles: A new mole or an existing mole that undergoes changes in size, shape, color, or texture may be a warning sign. Melanomas often have uneven or irregular borders and may be larger than a pencil eraser.\n" +
+                            desc = "Melanoma, juga disebut melanoma ganas, adalah kanker yang biasanya dimulai di kulit. Itu bisa dimulai di tahi lalat atau di kulit yang tampak normal. Melanoma adalah tumor yang dihasilkan oleh transformasi ganas melanosit.",
+                            symptom = "1. Tahi Lalat Tidak Beraturan: Tahi lalat baru atau tahi lalat yang sudah ada yang mengalami perubahan ukuran, bentuk, warna, atau tekstur mungkin merupakan tanda peringatan. Melanoma sering memiliki batas yang tidak rata atau tidak beraturan dan mungkin lebih besar dari penghapus pensil.\n" +
                                     "\n" +
-                                    "2. Asymmetry: Melanomas are typically asymmetric, meaning one half of the mole or lesion does not match the other half.\n" +
+                                    "2. Asimetri: Melanoma biasanya asimetris, artinya separuh tahi lalat atau lesi tidak cocok dengan separuh lainnya.\n" +
                                     "\n" +
-                                    "3. Varied Colors: Melanomas may have multiple colors or shades within the same lesion, including areas of brown, black, blue, red, or white.\n" +
+                                    "3. Warna Bervariasi: Melanoma mungkin memiliki banyak warna atau bayangan dalam lesi yang sama, termasuk area berwarna coklat, hitam, biru, merah, atau putih.\n" +
                                     "\n" +
-                                    "4. Diameter: Melanomas are usually larger in diameter compared to regular moles. They are generally more significant than 6 millimeters (about the size of a pencil eraser), but they can be smaller as well.\n" +
+                                    "4. Diameter: Melanoma biasanya berdiameter lebih besar dibandingkan dengan tahi lalat biasa. Mereka umumnya lebih besar dari 6 milimeter (seukuran penghapus pensil), tetapi bisa juga lebih kecil.\n" +
                                     "\n" +
-                                    "5. Evolving or Changing: Any changes in the size, shape, color, elevation, or other characteristics of a mole or pigmented area should be evaluated. This includes itching, bleeding, crusting, or ulceration of the mole.\n" +
+                                    "5. Berkembang atau Berubah: Setiap perubahan dalam ukuran, bentuk, warna, ketinggian, atau karakteristik lain dari tahi lalat atau area berpigmen harus dievaluasi. Ini termasuk gatal, pendarahan, pengerasan kulit, atau ulserasi tahi lalat.\n" +
                                     "\n" +
-                                    "6. Spreading: Melanomas may extend beyond the border of a mole or lesion, growing into the surrounding skin.\n" +
+                                    "6. Penyebaran: Melanoma dapat meluas melampaui batas tahi lalat atau lesi, tumbuh ke kulit di sekitarnya.\n" +
                                     "\n" +
-                                    "7. Sensation: Some individuals may experience tenderness, pain, or itching in the affected area.",
+                                    "7. Sensasi: Beberapa individu mungkin mengalami nyeri tekan, nyeri, atau gatal di area yang terkena.",
                             type = "",
-                            note = "It is important to note that not all melanomas display these symptoms, and some melanomas may lack pigmentation and appear as pink, red, or flesh-colored lesions. It's crucial to regularly examine your skin and consult a dermatologist if you notice any concerning changes or abnormalities in your moles or skin. Early detection and treatment greatly increase the chances of successful outcomes in melanoma cases. So if you are detcted has Melanoma Skin cancer so, SCANTION suggest you to go to the neariest Doctor or Hospital."
+                            note = "Penting untuk dicatat bahwa tidak semua melanoma menunjukkan gejala ini, dan beberapa melanoma mungkin kekurangan pigmentasi dan muncul sebagai lesi berwarna merah muda, merah, atau berwarna daging. Sangat penting untuk memeriksa kulit Anda secara teratur dan berkonsultasi dengan dokter kulit jika Anda melihat adanya perubahan atau kelainan pada tahi lalat atau kulit Anda. Deteksi dan pengobatan dini sangat meningkatkan kemungkinan hasil yang sukses dalam kasus melanoma. Jadi jika anda dideteksi menderita kanker kulit melanoma maka SCANTION menyarankan anda untuk berobat ke Dokter atau Rumah Sakit terdekat."
                         ),
                 "Normal" to
                         CancerType(
                             displayName = "Normal",
-                            fullName = "Normal Skin",
-                            desc = "1. Normal Skin has clear area and there's no scars at all. Normal skin appears smooth, even-toned, and consistent in color. It does not have any unusual growths, discoloration, or irregular borders.\n" +
+                            fullName = "Kulit Normal",
+                            desc = "1. Kulit normal memiliki area yang bersih dan tidak ada bekas luka sama sekali. Kulit normal tampak halus, kencang, dan warnanya konsisten. Itu tidak memiliki pertumbuhan yang tidak biasa, perubahan warna, atau batas yang tidak teratur.\n" +
                                     "\n" +
-                                    "2. Normal skin has a balanced pigmentation level. It may have variations in skin tone due to factors like sun exposure, ethnicity, or natural variations, but it does not have large or irregularly shaped pigmented areas that are indicative of melanoma.\n" +
+                                    "2. Kulit normal memiliki tingkat pigmentasi yang seimbang. Ini mungkin memiliki variasi warna kulit karena faktor-faktor seperti paparan sinar matahari, etnis, atau variasi alami, tetapi tidak memiliki area pigmen yang besar atau berbentuk tidak teratur yang mengindikasikan melanoma.\n" +
                                     "\n" +
-                                    "3. Moles are common on normal skin and are usually harmless. Normal moles are typically small, round or oval-shaped, and have a consistent color throughout. They may be flat or slightly raised but are usually not larger than the diameter of a pencil eraser.",
+                                    "3. Tahi lalat biasa terjadi pada kulit normal dan biasanya tidak berbahaya. Tahi lalat normal biasanya kecil, berbentuk bulat atau oval, dan memiliki warna yang konsisten. Mereka mungkin datar atau sedikit terangkat tetapi biasanya tidak lebih besar dari diameter penghapus pensil.",
                             symptom = "",
                             type = "",
                             note = ""
