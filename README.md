@@ -10,9 +10,10 @@ This repository contains the source code and related resources for Scantion, a S
 - **Risk Assessment**: Based on the classification results, the app provides a risk assessment indicating the likelihood of skin cancer.
 - **Educational Resources**: The app offers educational resources such as articles and information about skin cancer prevention, early detection, and self-examination techniques.
 - **User Profile**: Users can create profiles to track their uploaded images, assessment history, and progress over time.
-- **Notifications**: The app can send reminders and notifications to users for regular self-examinations and follow-ups.
 
 ## Technologies Used
 
 - **Jetpack Compose**: The modern Android UI toolkit is used for building the user interface and providing a responsive and visually appealing design.
 - **Android Jetpack**: Various Android Jetpack components such as ViewModel, LiveData, and Room are employed for efficient data management and app architecture.
+- **TensorFlow Lite**: For model data from machine learning
+- **Retrofit**: For communication with api
