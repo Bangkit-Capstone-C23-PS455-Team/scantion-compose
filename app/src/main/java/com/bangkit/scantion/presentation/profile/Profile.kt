@@ -2,6 +2,7 @@ package com.bangkit.scantion.presentation.profile
 
 import android.annotation.SuppressLint
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,19 +14,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,6 +59,7 @@ fun Profile(
         navController.popBackStack()
         navController.navigate(Graph.AUTHENTICATION)
     }
+    val isLoading = rememberSaveable { mutableStateOf(false) }
     DoubleClickBackClose()
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
@@ -71,7 +75,7 @@ fun Profile(
         Spacer(modifier = Modifier.height(20.dp))
         ProfileInfo(userLog)
         Spacer(modifier = Modifier.height(40.dp))
-        ContentSection(navController, viewModel)
+        ContentSection(navController, viewModel, isLoading)
     }
 }
 
@@ -89,9 +93,14 @@ fun ProfileInfo(userLog: UserLog) {
 }
 
 @Composable
-fun ContentSection(navController: NavHostController, viewModel: ProfileViewModel) {
+fun ContentSection(
+    navController: NavHostController,
+    viewModel: ProfileViewModel,
+    isLoading: MutableState<Boolean>
+) {
     val showDialog = rememberSaveable { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
+    val context = LocalContext.current
 
     ConfirmationDialog(
         showDialog = showDialog,
@@ -104,18 +113,26 @@ fun ContentSection(navController: NavHostController, viewModel: ProfileViewModel
             viewModel.logoutUser().observe(lifecycleOwner) {
                 if (it != null)
                     when (it){
-                        is Resource.Loading -> {}
+                        is Resource.Loading -> {
+                            isLoading.value = true
+                        }
                         is Resource.Success -> {
                             if (it.data.message == "logout success"){
                                 viewModel.clearDatastore()
                                 navController.popBackStack()
                                 navController.navigate(Graph.AUTHENTICATION)
                                 Log.d("logout", "succes")
+                                Toast.makeText(context, "Berhasil logout", Toast.LENGTH_LONG).show()
+                            } else {
+                                Toast.makeText(context, "Gagal logout", Toast.LENGTH_LONG).show()
                             }
+                            isLoading.value = false
                         }
 
                         is Resource.Error -> {
                             Log.d("logout", "failed")
+                            Toast.makeText(context, "Error ${it.message}", Toast.LENGTH_LONG).show()
+                            isLoading.value = false
                         }
                     }
             }
@@ -142,8 +159,14 @@ fun ContentSection(navController: NavHostController, viewModel: ProfileViewModel
     )
 
     Column(modifier = Modifier.fillMaxSize()) {
-        for (item in items){
-            RowItemProfileMenu(item = item)
+        if (isLoading.value) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else {
+            for (item in items){
+                RowItemProfileMenu(item = item)
+            }
         }
     }
 }

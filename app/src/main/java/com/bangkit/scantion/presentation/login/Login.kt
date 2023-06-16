@@ -2,22 +2,18 @@ package com.bangkit.scantion.presentation.login
 
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
-import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,9 +22,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,6 +37,7 @@ import com.bangkit.scantion.viewmodel.LoginViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -63,6 +60,7 @@ fun Login(
     fromWalkthrough: Boolean = false,
     loginViewModel: LoginViewModel = hiltViewModel()
 ) {
+    val isLoading = rememberSaveable { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     Scaffold(modifier = Modifier
         .clickable(indication = null,
@@ -83,16 +81,28 @@ fun Login(
             })
     }
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier.padding(horizontal = 20.dp),
-            contentPadding = innerPadding,
-            content = {
-                item {
-                    ContentSection(navController = navController, loginViewModel, focusManager)
-                    BottomSection(navController = navController, fromWalkthrough, focusManager)
-                }
-            })
+        if (isLoading.value) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.padding(horizontal = 20.dp),
+                contentPadding = innerPadding,
+                content = {
+                    item {
+                        ContentSection(
+                            navController = navController,
+                            loginViewModel,
+                            focusManager,
+                            isLoading
+                        )
+                        BottomSection(navController = navController, fromWalkthrough, focusManager)
+                    }
+                })
+        }
     }
+
 }
 
 @Composable
@@ -100,7 +110,9 @@ fun BottomSection(
     navController: NavHostController, fromWalkthrough: Boolean, focusManager: FocusManager
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(top = 20.dp), horizontalArrangement = Arrangement.Center
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 20.dp), horizontalArrangement = Arrangement.Center
     ) {
         Text(text = "Belum punya akun? ")
         Text(text = "Daftar sekarang",
@@ -119,12 +131,14 @@ fun BottomSection(
 
 @Composable
 fun ContentSection(
-    navController: NavHostController, loginViewModel: LoginViewModel, focusManager: FocusManager
+    navController: NavHostController,
+    loginViewModel: LoginViewModel,
+    focusManager: FocusManager,
+    isLoading: MutableState<Boolean>
 ) {
     var emailText by rememberSaveable { mutableStateOf("") }
     var passwordText by rememberSaveable { mutableStateOf("") }
     val passwordVisibility = rememberSaveable { mutableStateOf(true) }
-    val isLoading = rememberSaveable { mutableStateOf(false) }
 
     val emailFocusRequester = remember { FocusRequester() }
     val passwordFocusRequester = remember { FocusRequester() }

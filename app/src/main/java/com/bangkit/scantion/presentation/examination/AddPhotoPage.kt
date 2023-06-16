@@ -88,7 +88,7 @@ fun AddPhotoPage(
                 )
             if (!hasImage) {
                 Text(
-                    text = "Empty",
+                    text = "Kosong",
                     style = TextStyle(color = MaterialTheme.colorScheme.secondary),
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -104,7 +104,7 @@ fun AddPhotoPage(
                         tempUri = ImageFileProvider.getImageUri(context)
                         takePictureLauncher.launch(tempUri)
                     },
-                    text = "Dari Kamera",
+                    text = "Kamera",
                     outlineButton = hasImage
                 )
             }
@@ -115,7 +115,7 @@ fun AddPhotoPage(
                         singlePhotoPickerLauncher.launch(
                             PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                         ) },
-                    text = if (!hasImage) "Pilih Gambar" else "Ganti Gambar",
+                    text = "Galeri",
                     outlineButton = hasImage
                 )
             }

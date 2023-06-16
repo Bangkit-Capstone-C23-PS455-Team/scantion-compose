@@ -33,6 +33,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -135,12 +136,15 @@ fun Examination(
     var isGotResult by rememberSaveable { mutableStateOf(false) }
     var isPostDone by rememberSaveable { mutableStateOf(false) }
 
+    val isLoading = rememberSaveable { mutableStateOf(false) }
+
     val isQuestionAnswered =
         bodyPart.isNotEmpty() && howLong.isNotEmpty() && symptom.isNotEmpty()
 
     var skinCase by rememberSaveable { mutableStateOf<SkinCase?>(null) }
 
     if (isProcessDone && !isGotResult) {
+        isLoading.value = true
         val newId = "case-id-${UUID.randomUUID()}"
         val savedImage = savedImage(context, photoUri!!, newId)
         if (savedImage != null) {
@@ -156,10 +160,11 @@ fun Examination(
             )
         }
         isGotResult = true
+        isLoading.value = false
     }
 
     LaunchedEffect(skinCase) {
-        if (skinCase != null && !isPostDone) {
+        if (skinCase != null && !isPostDone && isGotResult) {
             examinationViewModel.addSkinExam(skinCase!!)
             isPostDone = true
         }
@@ -266,6 +271,7 @@ fun Examination(
                     skinCase,
                     items.size,
                     pageState.currentPage,
+                    isLoading.value,
                     onNextClick = {
                         if (pageState.currentPage < items.size - 1) scope.launch {
                             pageState.animateScrollToPage(pageState.currentPage + 1)
@@ -275,47 +281,52 @@ fun Examination(
                         if (pageState.currentPage + 1 > 1) scope.launch {
                             pageState.animateScrollToPage(pageState.currentPage - 1)
                         }
-                    },
-                    onProcessClick = {
-                        isProcessDone = true
                     }
-                )
+                ) {
+                    isProcessDone = true
+                }
             }
         }
     ) {innerPadding ->
-        LazyColumn(
-            contentPadding = innerPadding,
-            content = {
-            item{
-                HorizontalPager(
-                    count = items.size,
-                    state = pageState,
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    userScrollEnabled = false
-                ) { page ->
-                    ExaminationPage(
-                        navController,
-                        context,
-                        userLog,
-                        page,
-                        bodyPart,
-                        howLong,
-                        symptom,
-                        photoUri,
-                        hasImage,
-                        isProcessDone,
-                        onBodyPartChange = { bodyPart = it },
-                        onSymptomChange = { symptom = it },
-                        onHowLongChange = { howLong = it },
-                        onPhotoUriChange = { photoUri = it },
-                        onHasImageChange = { hasImage = it },
-                        backCallbackEnabled,
-                        skinCase
-                    )
-                }
+        if(isLoading.value){
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
-        })
+        } else {
+            LazyColumn(
+                contentPadding = innerPadding,
+                content = {
+                    item{
+                        HorizontalPager(
+                            count = items.size,
+                            state = pageState,
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            userScrollEnabled = false
+                        ) { page ->
+                            ExaminationPage(
+                                navController,
+                                context,
+                                userLog,
+                                page,
+                                bodyPart,
+                                howLong,
+                                symptom,
+                                photoUri,
+                                hasImage,
+                                isProcessDone,
+                                onBodyPartChange = { bodyPart = it },
+                                onSymptomChange = { symptom = it },
+                                onHowLongChange = { howLong = it },
+                                onPhotoUriChange = { photoUri = it },
+                                onHasImageChange = { hasImage = it },
+                                backCallbackEnabled,
+                                skinCase
+                            )
+                        }
+                    }
+                })
+        }
     }
 }
 
@@ -473,6 +484,7 @@ fun BottomSection(
     skinCase: SkinCase?,
     size: Int,
     index: Int,
+    isLoading: Boolean,
     onNextClick: () -> Unit = {},
     onPrevClick: () -> Unit = {},
     onProcessClick: () -> Unit = {},
@@ -516,7 +528,8 @@ fun BottomSection(
                         outlineButton = true,
                         iconStart = !isOnResult,
                         iconEnd = isOnResult,
-                        icon = if (isOnResult) Icons.Outlined.ArrowDropDown else Icons.Outlined.KeyboardArrowLeft
+                        icon = if (isOnResult) Icons.Outlined.ArrowDropDown else Icons.Outlined.KeyboardArrowLeft,
+                        enabled = !isLoading
                     )
                 }
             }
@@ -533,7 +546,7 @@ fun BottomSection(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 10.dp),
-                    enabled = if (isOnResult) true else enabledNext,
+                    enabled = if (isOnResult) true else enabledNext && !isLoading,
                     onClick = {
                         if (isLastInput) onProcessClick.invoke()
                         if (isOnResult) navController.popBackStack() else onNextClick.invoke()

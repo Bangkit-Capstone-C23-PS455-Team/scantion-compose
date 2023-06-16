@@ -5,15 +5,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -33,6 +33,7 @@ import com.bangkit.scantion.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -57,6 +58,7 @@ fun Register(
     registerViewModel: RegisterViewModel = hiltViewModel()
 ) {
     val focusManager = LocalFocusManager.current
+    val isLoading = rememberSaveable { mutableStateOf(false) }
 
     Scaffold(modifier = Modifier
         .clickable(indication = null,
@@ -77,15 +79,20 @@ fun Register(
             })
     }
     ) { innerPadding ->
+        if (isLoading.value) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else {
         LazyColumn(
             modifier = Modifier.padding(horizontal = 20.dp),
             contentPadding = innerPadding,
             content = {
                 item {
-                    ContentSection(navController = navController, focusManager, registerViewModel)
+                    ContentSection(navController = navController, focusManager, registerViewModel, isLoading)
                     BottomSection(navController = navController, fromWalkthrough, focusManager)
                 }
-            })
+            })}
     }
 }
 
@@ -117,7 +124,8 @@ fun BottomSection(
 fun ContentSection(
     navController: NavHostController,
     focusManager: FocusManager,
-    registerViewModel: RegisterViewModel
+    registerViewModel: RegisterViewModel,
+    isLoading: MutableState<Boolean>
 ) {
     var nameText by rememberSaveable { mutableStateOf("") }
     var emailText by rememberSaveable { mutableStateOf("") }
@@ -138,23 +146,27 @@ fun ContentSection(
     val context = LocalContext.current
 
     val performRegistration: () -> Unit = {
+        isLoading.value = true
         focusManager.clearFocus()
         registerViewModel.registerUser(nameText, emailText, passwordText).observe(lifecycleOwner){
             if (it != null) {
                 when(it) {
                     is Resource.Loading -> {
+                        isLoading.value = true
                     }
                     is Resource.Success -> {
                         if (!it.data.message.isNullOrEmpty() && it.data.message == "User has been regist"){
-                            Toast.makeText(context, "Registration Success, Please Login", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, "Registrasi berhasil, silahkan login", Toast.LENGTH_LONG).show()
                             navController.popBackStack()
                             navController.navigate(AuthScreen.Login.createRoute(true))
                         } else {
-                            Toast.makeText(context, "Registration Failed", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, "Registrasi gagal", Toast.LENGTH_LONG).show()
                         }
+                        isLoading.value = false
                     }
                     is Resource.Error -> {
                         Toast.makeText(context, "Error ${it.message}", Toast.LENGTH_LONG).show()
+                        isLoading.value = false
                     }
                 }
             }
@@ -174,7 +186,6 @@ fun ContentSection(
         value = nameText,
         onValueChange = { nameText = it },
         label = { Text("Name") },
-        isEmailTf = true,
         leadingIcon = {
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_name),
@@ -192,6 +203,7 @@ fun ContentSection(
         value = emailText,
         onValueChange = { emailText = it },
         label = { Text("Email") },
+        isEmailTf = true,
         leadingIcon = {
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_mail),
