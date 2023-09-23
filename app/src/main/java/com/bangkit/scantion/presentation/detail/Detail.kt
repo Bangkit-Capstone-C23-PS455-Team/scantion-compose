@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -37,7 +36,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.bangkit.scantion.model.SkinCase
 import com.bangkit.scantion.model.UserLog
@@ -48,8 +46,8 @@ import com.bangkit.scantion.ui.component.ScantionButton
 import com.bangkit.scantion.util.Constants
 import com.bangkit.scantion.util.ImageFileProvider
 import com.bangkit.scantion.util.saveToPdf
+import com.bangkit.scantion.viewmodel.AuthViewModel
 import com.bangkit.scantion.viewmodel.ExaminationViewModel
-import com.bangkit.scantion.viewmodel.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -59,15 +57,18 @@ import kotlinx.coroutines.launch
 fun Detail(
     navController: NavHostController,
     skinCaseId: String,
-    homeViewModel: HomeViewModel = hiltViewModel(),
+    viewModel: AuthViewModel = hiltViewModel(),
     examinationViewModel: ExaminationViewModel = hiltViewModel()
 ) {
     var userLog = UserLog()
-    try {
-        userLog = homeViewModel.userLog.value!!
-    } catch (e: Exception) {
-        navController.popBackStack()
-        navController.navigate(Graph.AUTHENTICATION)
+
+    viewModel.currentUser.let {
+        if (it != null) {
+            userLog = UserLog(it.uid, it.displayName.toString(), it.email.toString())
+        } else {
+            navController.popBackStack()
+            navController.navigate(Graph.AUTHENTICATION)
+        }
     }
 
     val scope = rememberCoroutineScope()

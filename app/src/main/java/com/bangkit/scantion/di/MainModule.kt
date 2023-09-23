@@ -1,11 +1,11 @@
 package com.bangkit.scantion.di
 
 import android.content.Context
-import com.bangkit.scantion.data.database.SkinExamsDao
 import com.bangkit.scantion.data.database.SkinExamsDatabase
-import com.bangkit.scantion.data.preference.login.LoginDataStoreRepository
 import com.bangkit.scantion.data.preference.theme.ThemeManager
-import com.bangkit.scantion.data.repository.AuthRepository
+import com.bangkit.scantion.data.firebase.AuthRepository
+import com.bangkit.scantion.data.firebase.AuthRepositoryImpl
+import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,19 +30,13 @@ object MainModule {
 
     @Provides
     @Singleton
-    fun provideDataStoreRepository(
-        @ApplicationContext context: Context
-    ) = LoginDataStoreRepository(context = context)
-
-    @Provides
-    @Singleton
     fun provideThemeModeDatastore(
         @ApplicationContext context: Context
     ) = ThemeManager(context = context)
 
     @Provides
-    @Singleton
-    fun provideAuthRepository(
-        @ApplicationContext context: Context
-    ) = AuthRepository(context)
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+    @Provides
+    fun providesAuthRepository(impl: AuthRepositoryImpl): AuthRepository = impl
 }

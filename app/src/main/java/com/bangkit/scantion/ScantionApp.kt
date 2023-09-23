@@ -12,13 +12,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -117,51 +115,6 @@ fun ScantionAppCompose(
     }
 }
 
-@Composable
-fun DoubleClickBackClose(enableDoubleClick: Boolean = true) {
-    val context = LocalContext.current
-    var backPressedCount by remember { mutableIntStateOf(0) }
-    val onResetPress: (Int) -> Unit = {backPressedCount = it}
-
-    val onBackPressedCallback = object : OnBackPressedCallback(enableDoubleClick) {
-        override fun handleOnBackPressed() {
-            backPressedCount++
-            if (backPressedCount >= 2) {
-                (context as? Activity)?.finish()
-            } else {
-                Toast.makeText(context, "Tekan sekali lagi untuk keluar", Toast.LENGTH_SHORT).show()
-            }
-
-            CoroutineScope(Dispatchers.Default).launch {
-                withContext(Dispatchers.Main) {
-                    delay(2000) // 2 seconds delay
-                    onResetPress.invoke(0)
-                }
-            }
-        }
-    }
-
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val backDispatcherOwner = LocalOnBackPressedDispatcherOwner.current
-
-    DisposableEffect(lifecycleOwner) {
-        val lifecycleObserver = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                backDispatcherOwner?.onBackPressedDispatcher?.addCallback(
-                    onBackPressedCallback
-                )
-            } else if (event == Lifecycle.Event.ON_PAUSE) {
-                onBackPressedCallback.remove()
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
-
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
-        }
-    }
-}
-
 data class NavBarItem(
     val name: String,
     val route: String,
@@ -190,7 +143,9 @@ fun NavBar(
         ),
     )
 
-    Box(modifier = Modifier.fillMaxSize().background(color = Color.Transparent),
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(color = Color.Transparent),
         contentAlignment = Alignment.Center) {
         NavigationBar{
             navBarItems.forEach { item ->

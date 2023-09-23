@@ -5,7 +5,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bangkit.scantion.data.preference.login.LoginDataStoreRepository
+import com.bangkit.scantion.data.firebase.AuthRepository
 import com.bangkit.scantion.data.preference.theme.ThemeManager
 import com.bangkit.scantion.navigation.Graph
 import kotlinx.coroutines.Dispatchers
@@ -14,10 +14,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class SplashViewModel @Inject constructor(
-    private val repository: LoginDataStoreRepository,
+    repository: AuthRepository,
     private val themeManager: ThemeManager
 ) : ViewModel() {
-
     private val _isLoading: MutableState<Boolean> = mutableStateOf(true)
     val isLoading: State<Boolean> = _isLoading
 
@@ -31,15 +30,12 @@ class SplashViewModel @Inject constructor(
     val darkTheme: State<Boolean> = _darkTheme
 
     init {
-        viewModelScope.launch {
-            repository.getToken().collect { token ->
-                if (!token.isNullOrEmpty()) {
-                    _startDestination.value = Graph.HOME
-                } else {
-                    _startDestination.value = Graph.AUTHENTICATION
-                }
-            }
+        if (repository.currentUser != null) {
+            _startDestination.value = Graph.HOME
+        } else {
+            _startDestination.value = Graph.AUTHENTICATION
         }
+
         viewModelScope.launch(Dispatchers.IO) {
             themeManager.getInitTheme().collect {
                 _initTheme.value = it

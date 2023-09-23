@@ -1,7 +1,7 @@
 package com.bangkit.scantion.presentation.login
 
-import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +33,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.bangkit.scantion.R
 import com.bangkit.scantion.navigation.Graph
-import com.bangkit.scantion.viewmodel.LoginViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,47 +46,44 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.vectorResource
 import com.bangkit.scantion.navigation.AuthScreen
-import com.bangkit.scantion.navigation.HomeScreen
 import com.bangkit.scantion.ui.component.AuthSpacer
 import com.bangkit.scantion.ui.component.AuthTextField
 import com.bangkit.scantion.ui.component.ScantionButton
 import com.bangkit.scantion.util.Resource
+import com.bangkit.scantion.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Login(
     navController: NavHostController,
     fromWalkthrough: Boolean = false,
-    loginViewModel: LoginViewModel = hiltViewModel()
+    loginViewModel: AuthViewModel = hiltViewModel()
 ) {
     val isLoading = rememberSaveable { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
-    Scaffold(modifier = Modifier
-        .clickable(indication = null,
-            interactionSource = remember { MutableInteractionSource() },
-            onClick = { focusManager.clearFocus() }), topBar = {
-        TopAppBar(
-            title = { },
-            navigationIcon = {
-                IconButton(onClick = {
-                    focusManager.clearFocus()
-                    navController.popBackStack()
-                }) {
-                    Icon(
-                        imageVector = Icons.Outlined.KeyboardArrowLeft,
-                        contentDescription = "back"
-                    )
-                }
-            })
-    }
-    ) { innerPadding ->
-        if (isLoading.value) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        } else {
+
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Scaffold(modifier = Modifier
+            .clickable(indication = null,
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = { focusManager.clearFocus() }), topBar = {
+            TopAppBar(
+                title = { },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        focusManager.clearFocus()
+                        navController.popBackStack()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Outlined.KeyboardArrowLeft,
+                            contentDescription = "back"
+                        )
+                    }
+                })
+        }
+        ) { innerPadding ->
             LazyColumn(
-                modifier = Modifier.padding(horizontal = 20.dp),
+                modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
                 contentPadding = innerPadding,
                 content = {
                     item {
@@ -99,15 +95,26 @@ fun Login(
                         )
                         BottomSection(navController = navController, fromWalkthrough, focusManager)
                     }
-                })
+                }
+            )
+        }
+        if (isLoading.value){
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .clickable {  }
+                    .background(color = MaterialTheme.colorScheme.background.copy(alpha = .8f)))
+                CircularProgressIndicator()
+            }
         }
     }
-
 }
 
 @Composable
 fun BottomSection(
-    navController: NavHostController, fromWalkthrough: Boolean, focusManager: FocusManager
+    navController: NavHostController,
+    fromWalkthrough: Boolean,
+    focusManager: FocusManager,
 ) {
     Row(
         modifier = Modifier
@@ -132,7 +139,7 @@ fun BottomSection(
 @Composable
 fun ContentSection(
     navController: NavHostController,
-    loginViewModel: LoginViewModel,
+    viewModel: AuthViewModel,
     focusManager: FocusManager,
     isLoading: MutableState<Boolean>
 ) {
@@ -149,7 +156,8 @@ fun ContentSection(
     val context = LocalContext.current
 
     val performLogin: () -> Unit = {
-        loginViewModel.loginUser(emailText, passwordText).observe(lifecycleOwner) {
+        focusManager.clearFocus()
+        viewModel.login(emailText, passwordText).observe(lifecycleOwner) {
             if (it != null) {
                 when (it) {
                     is Resource.Loading -> {
@@ -157,22 +165,15 @@ fun ContentSection(
                     }
 
                     is Resource.Success -> {
-                        val token = it.data.accessToken
-                        if (!token.isNullOrEmpty()) {
-                            focusManager.clearFocus()
-                            Log.d("token", token)
-                            loginViewModel.saveToken(token.removePrefix("0|"))
-                            navController.navigate(Graph.HOME) {
-                                popUpTo(HomeScreen.Home.route) { inclusive = true }
-                            }
-                        } else {
-                            Toast.makeText(context, "Login Failed", Toast.LENGTH_LONG).show()
+                        navController.navigate(Graph.HOME){
+                            popUpTo(Graph.AUTHENTICATION)
                         }
                         isLoading.value = false
+                        Toast.makeText(context, "Login Berhasil", Toast.LENGTH_LONG).show()
                     }
 
                     is Resource.Error -> {
-                        Toast.makeText(context, "Terjadi masalah jaringan/server atau data yang anda masukan salah", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, it.message, Toast.LENGTH_LONG).show()
                         isLoading.value = false
                     }
                 }
@@ -200,7 +201,7 @@ fun ContentSection(
                 contentDescription = "icon tf mail"
             )
         },
-        nextFocusRequester = passwordFocusRequester
+        nextFocusRequester = passwordFocusRequester,
     )
     AuthTextField(
         modifier = Modifier

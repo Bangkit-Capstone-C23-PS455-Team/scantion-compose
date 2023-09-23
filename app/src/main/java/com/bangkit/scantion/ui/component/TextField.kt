@@ -2,11 +2,8 @@ package com.bangkit.scantion.ui.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -16,12 +13,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -30,12 +24,12 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.bangkit.scantion.R
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun TextFieldQuestion(
+    readOnly: Boolean = false,
     modifier: Modifier,
     text: String,
-    placeholder: String,
+    placeholder: String = "",
     value: String,
     onChangeValue: (String) -> Unit,
     nextFocusRequester: FocusRequester? = null,
@@ -58,6 +52,7 @@ fun TextFieldQuestion(
     ) {
         Text(text = text, style = MaterialTheme.typography.bodyMedium)
         OutlinedTextField(
+            readOnly = readOnly,
             modifier = modifier,
             value = value,
             onValueChange = onChangeValue,
@@ -68,7 +63,6 @@ fun TextFieldQuestion(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthTextField(
     modifier: Modifier,

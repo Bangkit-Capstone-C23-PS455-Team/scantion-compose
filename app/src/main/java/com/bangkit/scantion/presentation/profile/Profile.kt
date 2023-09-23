@@ -29,38 +29,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.bangkit.scantion.DoubleClickBackClose
 import com.bangkit.scantion.R
 import com.bangkit.scantion.model.ProfileItems
 import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.navigation.Graph
 import com.bangkit.scantion.navigation.HomeScreen
 import com.bangkit.scantion.ui.component.ConfirmationDialog
-import com.bangkit.scantion.util.Resource
-import com.bangkit.scantion.viewmodel.ProfileViewModel
+import com.bangkit.scantion.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun Profile(
-    navController: NavHostController, viewModel: ProfileViewModel = hiltViewModel()
+    navController: NavHostController, viewModel: AuthViewModel = hiltViewModel()
 ) {
     var userLog = UserLog()
-    try {
-        userLog = viewModel.userLog.value!!
-    } catch (e: Exception){
-        navController.popBackStack()
-        navController.navigate(Graph.AUTHENTICATION)
+
+    viewModel.currentUser.let {
+        if (it != null) {
+            userLog = UserLog(it.uid, it.displayName.toString(), it.email.toString())
+        } else {
+            navController.popBackStack()
+            navController.navigate(Graph.AUTHENTICATION)
+        }
     }
     val isLoading = rememberSaveable { mutableStateOf(false) }
-    DoubleClickBackClose()
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
             title = {
@@ -95,11 +94,10 @@ fun ProfileInfo(userLog: UserLog) {
 @Composable
 fun ContentSection(
     navController: NavHostController,
-    viewModel: ProfileViewModel,
+    viewModel: AuthViewModel,
     isLoading: MutableState<Boolean>
 ) {
     val showDialog = rememberSaveable { mutableStateOf(false) }
-    val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
 
     ConfirmationDialog(
@@ -110,36 +108,23 @@ fun ContentSection(
         dismissText = "Batal",
         redAlert = true,
         onConfirm = {
-            viewModel.logoutUser().observe(lifecycleOwner) {
-                if (it != null)
-                    when (it){
-                        is Resource.Loading -> {
-                            isLoading.value = true
-                        }
-                        is Resource.Success -> {
-                            if (it.data.message == "logout success"){
-                                viewModel.clearDatastore()
-                                navController.popBackStack()
-                                navController.navigate(Graph.AUTHENTICATION)
-                                Log.d("logout", "succes")
-                                Toast.makeText(context, "Berhasil logout", Toast.LENGTH_LONG).show()
-                            } else {
-                                Toast.makeText(context, "Gagal logout", Toast.LENGTH_LONG).show()
-                            }
-                            isLoading.value = false
-                        }
-
-                        is Resource.Error -> {
-                            Log.d("logout", "failed")
-                            Toast.makeText(context, "Error ${it.message}", Toast.LENGTH_LONG).show()
-                            isLoading.value = false
-                        }
-                    }
-            }
+            viewModel.logout()
+            navController.popBackStack()
+            navController.navigate(Graph.AUTHENTICATION)
+            Log.d("logout", "succes")
+            Toast.makeText(context, "Berhasil logout", Toast.LENGTH_LONG).show()
         }
     )
 
     val items = listOf(
+        ProfileItems(
+            menuName = "User Profile",
+            desc = "Edit data user",
+            icon = ImageVector.vectorResource(id = R.drawable.ic_profile),
+            action = {
+                navController.navigate(HomeScreen.UserProfile.route)
+            }
+        ),
         ProfileItems(
             menuName = "Pengaturan",
             desc = "Mengatur tema",
