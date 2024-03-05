@@ -14,6 +14,7 @@ import com.bangkit.scantion.presentation.explanation.Explanation
 import com.bangkit.scantion.presentation.history.History
 import com.bangkit.scantion.presentation.home.Home
 import com.bangkit.scantion.presentation.menu.Setting
+import com.bangkit.scantion.presentation.menu.UserProfile
 import com.bangkit.scantion.presentation.profile.Profile
 
 fun NavGraphBuilder.homeNavGraph(
@@ -36,6 +37,9 @@ fun NavGraphBuilder.homeNavGraph(
         }
         composable(route = HomeScreen.Setting.route) {
             Setting(navController, isDarkTheme, onThemeChange)
+        }
+        composable(route = HomeScreen.UserProfile.route) {
+            UserProfile(navController)
         }
         composable(route = HomeScreen.History.route) {
             History(navController)
@@ -76,6 +80,7 @@ sealed class HomeScreen(val route: String) {
     object Profile : HomeScreen(route = "profile_screen")
     object Examination : HomeScreen(route = "examination_screen")
     object Setting: HomeScreen("setting_screen")
+    object UserProfile : HomeScreen(route = "user_profile_screen")
     object History : HomeScreen(route = "history_route")
     object Detail: HomeScreen("detail/{storyId}") {
         fun createRoute(skinCaseId: String) = "detail/$skinCaseId"

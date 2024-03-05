@@ -2,7 +2,6 @@ package com.bangkit.scantion.presentation.history
 
 import android.annotation.SuppressLint
 import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -40,7 +39,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -54,57 +52,26 @@ import com.bangkit.scantion.model.UserLog
 import com.bangkit.scantion.navigation.Graph
 import com.bangkit.scantion.navigation.HomeScreen
 import com.bangkit.scantion.util.Constants.orPlaceHolderList
-import com.bangkit.scantion.util.Resource
 import com.bangkit.scantion.util.getDayFormat
+import com.bangkit.scantion.viewmodel.AuthViewModel
 import com.bangkit.scantion.viewmodel.ExaminationViewModel
-import com.bangkit.scantion.viewmodel.HomeViewModel
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun History(
     navController: NavHostController,
-    homeViewModel: HomeViewModel = hiltViewModel(),
+    viewModel: AuthViewModel = hiltViewModel(),
     examinationViewModel: ExaminationViewModel = hiltViewModel()
 ) {
-
     var userLog = UserLog()
 
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val userNotFoundUnit = {
-        navController.popBackStack()
-        navController.navigate(Graph.AUTHENTICATION)
-    }
-
-    try {
-        userLog = homeViewModel.userLog.value!!
-    } catch (e: Exception){
-        homeViewModel.getUser().observe(lifecycleOwner) { result ->
-            if (result != null) {
-                when (result) {
-                    is Resource.Loading -> {}
-                    is Resource.Success -> {
-                        userLog = UserLog(
-                            result.data.id,
-                            result.data.name,
-                            result.data.email,
-                            result.data.age,
-                            result.data.province,
-                            result.data.city
-                        )
-                        homeViewModel.saveUser(userLog)
-                        Log.d("user", "Get User success")
-                    }
-
-                    is Resource.Error -> {
-                        Log.d("user", "Get User Failed")
-                        userNotFoundUnit.invoke()
-                    }
-                }
-            } else {
-                Log.d("user", "Get User Failed")
-                userNotFoundUnit.invoke()
-            }
+    viewModel.currentUser.let {
+        if (it != null) {
+            userLog = UserLog(it.uid, it.displayName.toString(), it.email.toString())
+        } else {
+            navController.popBackStack()
+            navController.navigate(Graph.AUTHENTICATION)
         }
     }
 

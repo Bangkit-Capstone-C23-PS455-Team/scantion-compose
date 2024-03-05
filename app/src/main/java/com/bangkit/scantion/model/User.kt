@@ -4,7 +4,6 @@ data class UserLog(
     var id: String = "",
     var name: String = "",
     var email: String = "",
-    var age: Int = 0,
-    var province: String = "",
+    var born: Int = 0,
     var city: String = ""
 )
